@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+
+
+<br>
+<br>
+
+
+<table style="width:80%">
+
+        <tr>
+            <td>
+                Weight Set Up
+            </td>
+
+        <form action="/refresh" method="post">
+            <td>
+            Cost:
+                <select name="Cost">
+                    <option value=0>0</option>
+                    <option value=1>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                </select>
+            </td>
+            <td>
+                Mandate:
+                <select name="Mandate">
+                    <option value=0>0</option>
+                    <option value=1>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                </select>
+            </td>
+            <td>
+                Date:
+                <select name="Date">
+                    <option value=0>0</option>
+                    <option value=1>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                </select>
+            </td>
+            <td>
+                <input type="submit" value="set">
+            </td>
+        </form>
+        </tr>
+
+        <tr>
+            <td> Current Weights </td>
+            <td><%= weight.Cost %></td>
+            <td><%= weight.Mandate %></td>
+            <td><%= weight.Date %></td>
+
+        </tr>
+
+        <form action="/update" method="post" id="project_form">
+        <tr>
+            <td>
+                Project Name: <input type="text" name="ProjectName" required>
+            </td>
+            <td>
+                Cost:
+                <select name="Cost">
+                    <option value=1>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                    <option value=4>4</option>
+                    <option value=5>5</option>
+                </select>
+            </td>
+            <td>
+                Mandate:
+                <select name="Mandate">
+                    <option value=1>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                    <option value=4>4</option>
+                    <option value=5>5</option>
+                </select>
+            </td>
+
+
+            <td>
+                Date:
+                <select name="Date">
+                    <option value=1>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                    <option value=4>4</option>
+                    <option value=5>5</option>
+                </select>
+            </td>
+            <td>
+                <input type="submit">
+            </td>
+    </form>
+    </tr>
+
+    <br>
+    <br>
+
+    <% for (var i = 0; i < rows.length; ++i) { %>
+    <tr>
+            <td> <%= rows[i].PROJECT_NAME %> </td>
+            <td> <%= rows[i].COST %> </td>
+            <td> <%= rows[i].MANDATE == 1? "true": "false" %> </td>
+            <td> <%= rows[i].DATE %> </td>
+            <td>
+            <form action="/del" method="get">
+                <button name="ProjectName" type="submit" value="<%= rows[i].PROJECT_NAME %>"> delete </button>
+            </form>
+            </td>
+    </tr>
+
+    <% } %>
+
+</table>
+
+
+<br>
+</body>
+</html>
+
