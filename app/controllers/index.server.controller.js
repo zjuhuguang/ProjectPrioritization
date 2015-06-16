@@ -42,15 +42,12 @@ var insert = function(req, res) {
                     //console.log(a.PROJECT_NAME + " priority is " + w);
                     return w;
                 };
-                return f(a) - f(b);
+                return f(b) - f(a);
             });
             console.log(weight);
             res.render('insert', {rows: rows, weight: weight});
         });
-
     });
-
-
 };
 
 var update = function(req, res) {
@@ -66,8 +63,8 @@ var update = function(req, res) {
 
     var query = projectInfo.query('INSERT INTO project_info set ?', post, function(err, result) {
         if (err) throw err;
-
-        insert(req, res);
+        res.redirect('/insert');
+        //insert(req, res);
     });
     console.log(query.sql);
 };
@@ -86,7 +83,8 @@ var refresh = function(req, res) {
         }
 
         console.log("The file was saved!");
-        insert(req, res);
+        res.redirect('/insert');
+        //insert(req, res);
     });
 };
 
@@ -95,7 +93,8 @@ var del = function(req, res) {
     var delQuery = 'DELETE FROM PROJECT_INFO WHERE PROJECT_NAME =' + '\'' + req.query.ProjectName + '\'';
     var query = projectInfo.query(delQuery, function (err, result) {
         if (err) throw err;
-        insert(req, res);
+        res.redirect('/insert');
+        //insert(req, res);
     })
 };
 
