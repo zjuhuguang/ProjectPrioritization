@@ -64,6 +64,9 @@
         <form action="/update" method="post" id="project_form">
         <tr>
             <td>
+                Group: <input type="number", name="Group" required>
+            </td>
+            <td>
                 Project Name: <input type="text" name="ProjectName" required>
             </td>
             <td>
@@ -97,15 +100,17 @@
 
     <% for (var i = 0; i < rows.length; ++i) { %>
     <tr>
-            <td> <%= rows[i].PROJECT_NAME %> </td>
-            <td> <%= rows[i].COST %> </td>
-            <td> <%= rows[i].MANDATE %> </td>
-            <td> <%= rows[i].DATE %> </td>
-            <td>
-            <form action="/del" method="get">
-                <button name="ProjectName" type="submit" value="<%= rows[i].PROJECT_NAME %>"> delete </button>
-            </form>
-            </td>
+        <td> <%= rows[i].GROUP %> </td>
+        <td> <%= rows[i].PROJECT_NAME %> </td>
+        <td> <%= rows[i].COST %> </td>
+        <td> <%= rows[i].MANDATE %> </td>
+        <td> <%= rows[i].DATE %> </td>
+
+        <td>
+        <form action="/del" method="get">
+            <button name="ProjectName" type="submit" value="<%= rows[i].PROJECT_NAME %>"> delete </button>
+        </form>
+        </td>
     </tr>
 
     <% } %>
