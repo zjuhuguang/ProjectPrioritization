@@ -3,6 +3,84 @@
 <head lang="en">
     <meta charset="UTF-8">
     <title></title>
+    <!--<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
+
+    <!--<script src="/js/jquery.dynatable.js"></script> -->
+    <!--<link rel="stylesheet" type="text/css" href="jquery.dynatable.css" />
+    -->
+    <!-- DataTables CSS -->
+
+
+    <!-- DataTables -->
+    <script type="text/javascript" charset="utf8" src="/js/jquery.js"></script>
+    <script type="text/javascript" charset="utf8" src="/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" charset="utf8" src="/js/dataTables.tableTools.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="/js/dataTables.editor.min.js"></script>
+
+
+    <link rel="stylesheet" type="text/css" href="/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="/css/dataTables.tableTools.css">
+    <link rel="stylesheet" type="text/css" href="/css/dataTables.editor.css">
+
+
+    <script>
+        var editor;
+        $(document).ready( function () {
+            editor = new $.fn.dataTable.Editor( {
+                "ajax": "/update",
+                "table": "#projects",
+                "fields": [ {
+                    "label": "Group:",
+                    "name": "Group"
+                }, {
+                    "label": "Project Name:",
+                    "name": "Project_Name"
+                }, {
+                    "label": "Cost:",
+                    "name": "Cost"
+                }, {
+                    "label": "Mandate:",
+                    "name": "Mandate"
+                }, {
+                    "label": "Date:",
+                    "name": "Date"
+                }
+                ]
+            } );
+
+            $('#projects').on( 'click', 'tbody td:not(:first-child)', function (e) {
+                editor.bubble( this );
+            } );
+
+
+            $('#projects').DataTable( {
+                dom: "Tfrtip",
+                scrollY: 300,
+                paging: false,
+                ajax: "/index?action=queryProjects",
+                columns: [
+                    { data: "GROUP" },
+                    { data: "PROJECT_NAME" },
+                    { data: "COST" },
+                    { data: "MANDATE" },
+                    { data: "DATE" }
+
+                ],
+                order: [ 1, 'asc' ],
+                tableTools: {
+                    sRowSelect: "os",
+                    sRowSelector: 'td:first-child',
+                    aButtons: [
+                        { sExtends: "editor_create", editor: editor },
+                        { sExtends: "editor_edit",   editor: editor },
+                        { sExtends: "editor_remove", editor: editor }
+                    ]
+                }
+            } );
+
+        } );
+    </script>
+
 </head>
 <body>
 
@@ -60,6 +138,11 @@
             <td><%= weight.Date %></td>
 
         </tr>
+</table>
+<br><br>
+
+<table style="width:80%">
+
 
         <form action="/update" method="post" id="project_form">
         <tr>
@@ -97,23 +180,38 @@
 
     <br>
     <br>
+</table>
 
-    <% for (var i = 0; i < rows.length; ++i) { %>
+
+<table id="projects">
+    <thead>
+        <tr>
+            <th>Group</th>
+            <th>Project Name</th>
+            <th>Cost</th>
+            <th>Mandate</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <!--
+
+    <%# for (var i = 0; i < rows.length; ++i) { %>
     <tr>
-        <td> <%= rows[i].GROUP %> </td>
-        <td> <%= rows[i].PROJECT_NAME %> </td>
-        <td> <%= rows[i].COST %> </td>
-        <td> <%= rows[i].MANDATE %> </td>
-        <td> <%= rows[i].DATE %> </td>
+        <td> <p id="<%#=rows[i].ID%>"><#%= rows[i].GROUP %></p></td>
+        <td> <%#= rows[i].PROJECT_NAME %> </td>
+        <td> <%#= rows[i].COST %> </td>
+        <td> <%#= rows[i].MANDATE %> </td>
+        <td> <%#= rows[i].DATE %> </td>
 
         <td>
         <form action="/del" method="get">
-            <button name="ProjectName" type="submit" value="<%= rows[i].PROJECT_NAME %>"> delete </button>
+            <button name="ProjectName" type="submit" value="<%#= rows[i].PROJECT_NAME %>"> delete </button>
         </form>
         </td>
     </tr>
 
-    <% } %>
+    <%# } %>
+    -->
 
 </table>
 
@@ -121,4 +219,3 @@
 <br>
 </body>
 </html>
-
