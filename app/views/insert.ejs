@@ -29,6 +29,7 @@
             editor = new $.fn.dataTable.Editor( {
                 "ajax": "/update",
                 "table": "#projects",
+                "idSrc": "Id",
                 "fields": [ {
                     "label": "Group:",
                     "name": "Group"
@@ -59,11 +60,11 @@
                 paging: false,
                 ajax: "/index?action=queryProjects",
                 columns: [
-                    { data: "GROUP" },
-                    { data: "PROJECT_NAME" },
-                    { data: "COST" },
-                    { data: "MANDATE" },
-                    { data: "DATE" }
+                    { data: "Group" },
+                    { data: "Project_Name" },
+                    { data: "Cost" },
+                    { data: "Mandate" },
+                    { data: "Date" }
 
                 ],
                 order: [ 1, 'asc' ],

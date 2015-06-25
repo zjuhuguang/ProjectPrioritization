@@ -60,14 +60,14 @@ var index = function(req, res) {
             for (var row in rows) {
                 console.log("row is " + row);
                 //console.log("row is " + row);
-                costs.push(rows[row].COST);
+                costs.push(rows[row].Cost);
                 //console.log("date datatype is " + typeof rows[row].MANDATE);
-                console.log("date:" + rows[row].DATE.getTime());
+                console.log("date:" + rows[row].Date.getTime());
                 //convert DATEs to integers
-                rows[row].DATE_REL = modifyDate((rows[row].DATE.getTime() - new Date().getTime()));
-                console.log('date_rel is ' + rows[row].DATE_REL + '     date is ' + rows[row].DATE);
-                dates.push(rows[row].DATE_REL);
-                mandates.push(rows[row].MANDATE);
+                rows[row].Date_Rel = modifyDate((rows[row].Date.getTime() - new Date().getTime()));
+                console.log('date_rel is ' + rows[row].Date_Rel + '     date is ' + rows[row].Date);
+                dates.push(rows[row].Date_Rel);
+                mandates.push(rows[row].Mandate);
             }
             console.log(rows);
 
@@ -98,8 +98,8 @@ var index = function(req, res) {
                         return (data - mean) / std;
                     };
 
-                    console.log("zscore of cost = " + z_score(a.COST, costMean, costStd) + " zscore of date = " + z_score(a.DATE_REL, dateMean, dateStd) +" zscore of mandate = " + z_score(a.MANDATE, mandateMean, mandateStd));
-                    var w = z_score(a.COST, costMean, costStd) * weight.Cost + z_score(a.DATE_REL, dateMean, dateStd) * weight.Date + z_score(a.MANDATE, mandateMean, mandateStd) * weight.Mandate;
+                    console.log("zscore of cost = " + z_score(a.Cost, costMean, costStd) + " zscore of date = " + z_score(a.Date_Rel, dateMean, dateStd) +" zscore of mandate = " + z_score(a.Mandate, mandateMean, mandateStd));
+                    var w = z_score(a.Cost, costMean, costStd) * weight.Cost + z_score(a.Date_Rel, dateMean, dateStd) * weight.Date + z_score(a.Mandate, mandateMean, mandateStd) * weight.Mandate;
 
                     console.log("w = " + w);
                     return w;
@@ -112,24 +112,54 @@ var index = function(req, res) {
     });
 };
 
+//this is to handle create, delete and edit action for the database
 var update = function(req, res) {
-    var action = req.query.action;
+    //var action = req.query.action;
+    console.log('action is ' + action);
+    console.log("body is" + JSON.stringify(req.body));
+    var action = req.body.action;
     if (action == 'create') {
+        var data = req.body.data;
         var post = {};
-        console.log('type of date is ' + typeof req.body.Date);
-        post.Project_Name = req.body.Project_Name;
-        post.Cost = req.body.Cost;
-        post.Date = req.body.Date;
-        post.Mandate = req.body.Mandate;
-        post.Group = req.body.Group;
-        console.log('mandate = ' +  post.Mandate);
+        //console.log('type of date is ' + typeof req.body.Date);
+        post.Project_Name = data.Project_Name;
+        post.Cost = data.Cost;
+        post.Date = data.Date;
+        post.Mandate = data.Mandate;
+        post.Group = data.Group;
+        console.log('mandate = ' + post.Mandate);
 
-        var query = projectInfo.query('INSERT INTO project_info set ?', post, function(err, result) {
+        var query = projectInfo.query('INSERT INTO project_info set ?', post, function (err, result) {
             if (err) throw err;
-            res.redirect('/insert');
+            data.Id = result.insertId;
+            var re = {row: data};
+            //console.log(result);
+            //console.log(JSON.stringify(result));
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(re));
+
+            console.log(query.sql);
+            return;
             //insert(req, res);
         });
-        console.log(query.sql);
+
+    }
+    else if (action == 'remove') {
+        var Id = req.body.id;
+        console.log(Id);
+        for (var i = 0; i < Id.length; ++i) {
+            var delQuery = 'DELETE FROM PROJECT_INFO WHERE ID =' + Id[i];
+            var query = projectInfo.query(delQuery, function (err, result) {
+                if (err) throw err;
+                //res.redirect('/insert');
+
+
+                //insert(req, res);
+            })
+        }
+        var re = {};
+        res.send(JSON.stringify(re));
+        return;
     }
 
 };
