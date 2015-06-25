@@ -31,8 +31,8 @@
                 "table": "#projects",
                 "idSrc": "Id",
                 "fields": [ {
-                    "label": "Group:",
-                    "name": "Group"
+                    "label": "Group Name:",
+                    "name": "Group_Name"
                 }, {
                     "label": "Project Name:",
                     "name": "Project_Name"
@@ -60,7 +60,7 @@
                 paging: false,
                 ajax: "/index?action=queryProjects",
                 columns: [
-                    { data: "Group" },
+                    { data: "Group_Name" },
                     { data: "Project_Name" },
                     { data: "Cost" },
                     { data: "Mandate" },

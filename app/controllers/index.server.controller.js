@@ -126,7 +126,7 @@ var update = function(req, res) {
         post.Cost = data.Cost;
         post.Date = data.Date;
         post.Mandate = data.Mandate;
-        post.Group = data.Group;
+        post.Group_Name = data.Group_Name;
         console.log('mandate = ' + post.Mandate);
 
         var query = projectInfo.query('INSERT INTO project_info set ?', post, function (err, result) {
@@ -142,8 +142,8 @@ var update = function(req, res) {
             return;
             //insert(req, res);
         });
-
     }
+
     else if (action == 'remove') {
         var Id = req.body.id;
         console.log(Id);
@@ -159,7 +159,19 @@ var update = function(req, res) {
         }
         var re = {};
         res.send(JSON.stringify(re));
-        return;
+    }
+
+    else if (action == 'edit') {
+        var data = req.body.data;
+        var Id = req.body.id;
+
+        var editQuery = 'UPDATE PROJECT_INFO SET COST=' + data.Cost + ', DATE=' + '\'' + data.Date.substring(0, 10) + '\'' + ', MANDATE=' + '\'' + data.Mandate + '\'' + ', PROJECT_NAME=' + '\'' + data.Project_Name + '\'' + ', GROUP_NAME='   + data.Group_Name  + ' WHERE ID=' + Id;
+        console.log(editQuery);
+        var query = projectInfo.query(editQuery, function(err, result) {
+            if (err) throw err;
+            var re = {row: data};
+            res.send(JSON.stringify(re));
+        });
     }
 
 };
