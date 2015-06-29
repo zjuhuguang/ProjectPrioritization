@@ -28,11 +28,63 @@ var index = function(req, res) {
             if (err) throw err;
             res.setHeader('Content-Type', 'application/json');
             res.header('Access-Control-Allow-Origin', "*");
-            var result = {data: rows};
-            res.send(JSON.stringify(result));
+            var weight = {};
+            fs.readFile('./public/weight', 'utf8', function (err,data) {
+                if (err) throw err;
+                console.log("Reading data " + data);
+                weight = JSON.parse(data);
+                var costs = [], dates = [], mandates = [];
+
+                for (var row in rows) {
+                    rows[row].Date_Rel = modifyDate((rows[row].Date.getTime() - new Date().getTime()));
+                    //console.log('date_rel is ' + rows[row].Date_Rel + '     date is ' + rows[row].Date);
+                    costs.push(rows[row].Cost);
+                    dates.push(rows[row].Date_Rel);
+                    mandates.push(rows[row].Mandate);
+                }
+                //mean values
+                var costMean = math.mean(costs);
+                var dateMean = math.mean(dates);
+                var mandateMean = math.mean(mandates);
+                //std values
+                var costStd = math.std(costs);
+                var dateStd = math.std(dates);
+                var mandateStd = math.std(mandates);
+                //the function of calculating the grades of each fact
+                var z_score = function(data, mean, std) {
+                    if (data == mean) return 0;
+                    return (data - mean) / std;
+                };
+
+
+
+                for (var row in rows) {
+                    var r = rows[row];
+                    r.Cost_Grade = z_score(r.Cost, costMean, costStd);
+                    r.Date_Grade = z_score(r.Date_Rel, dateMean, dateStd);
+                    r.Mandate_Grade = z_score(r.Mandate, mandateMean, mandateStd);
+                    console.log('mandate grade is ' + r.Mandate_Grade);
+
+                    r.Grade = parseFloat((r.Cost_Grade * weight.Cost + r.Date_Grade * weight.Date + r.Mandate_Grade * weight.Mandate).toFixed(2));
+                    //console.log('type of grade ' + typeof r.Grade);
+                    //console.log('type of Date is ' + typeof r.Date.getTime());
+                    r.Date = r.Date.getFullYear() + '-' + r.Date.getMonth() + '-' + r.Date.getDate();
+                    console.log("Grade is"  + r.Grade);
+                }
+                var result = {data: rows};
+                res.send(JSON.stringify(result));
+            });
         });
         return;
     }
+
+    fs.readFile('./public/weight', 'utf8', function (err,data) {
+        if (err) throw err;
+        console.log("Reading data " + data);
+        var weight = JSON.parse(data);
+        res.render('insert', {weight: weight});
+    });
+    /*
 
     //render the projects to the website
     var weight = {};
@@ -110,6 +162,8 @@ var index = function(req, res) {
             res.render('insert', {rows: rows, weight: weight});
         });
     });
+    */
+
 };
 
 //this is to handle create, delete and edit action for the database
@@ -132,6 +186,7 @@ var update = function(req, res) {
         var query = projectInfo.query('INSERT INTO project_info set ?', post, function (err, result) {
             if (err) throw err;
             data.Id = result.insertId;
+            data.Grade = 0;
             var re = {row: data};
             //console.log(result);
             //console.log(JSON.stringify(result));
@@ -164,16 +219,18 @@ var update = function(req, res) {
     else if (action == 'edit') {
         var data = req.body.data;
         var Id = req.body.id;
+        console.log(req);
 
-        var editQuery = 'UPDATE PROJECT_INFO SET COST=' + data.Cost + ', DATE=' + '\'' + data.Date.substring(0, 10) + '\'' + ', MANDATE=' + '\'' + data.Mandate + '\'' + ', PROJECT_NAME=' + '\'' + data.Project_Name + '\'' + ', GROUP_NAME='   + data.Group_Name  + ' WHERE ID=' + Id;
-        console.log(editQuery);
-        var query = projectInfo.query(editQuery, function(err, result) {
+      //var editQuery = 'UPDATE PROJECT_INFO SET COST=' + data.Cost + ', DATE=' + '\'' + data.Date.substring(0, 10) + '\'' + ', MANDATE=' + '\'' + data.Mandate + '\'' + ', PROJECT_NAME=' + '\'' + data.Project_Name + '\'' + ', GROUP_NAME='   + '\'' + data.Group_Name  + '\'' + ' WHERE ID=' + Id;
+        var editQuery = 'UPDATE PROJECT_INFO SET COST=?, DATE=?, MANDATE=?, PROJECT_NAME=?, GROUP_NAME=? WHERE ID=?';
+        //console.log(editQuery);
+        var query = projectInfo.query(editQuery, [data.Cost, data.Date, data.Mandate, data.Project_Name, data.Group_Name, data.Id], function(err, result) {
             if (err) throw err;
+            data.Grade = 0;
             var re = {row: data};
             res.send(JSON.stringify(re));
         });
     }
-
 };
 
 /*
@@ -357,7 +414,7 @@ var refresh = function(req, res) {
         }
 
         console.log("The file was saved!");
-        res.redirect('/insert');
+        res.redirect('/index');
         //insert(req, res);
     });
 };

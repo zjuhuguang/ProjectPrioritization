@@ -6,7 +6,7 @@ module.exports = function(app) {
     //app.get('/', index.base);
     //app.get('/insert', index.insert);
     //app.post('/update', index.update);
-    //app.post('/refresh', index.refresh);
+    app.post('/refresh', index.refresh);
     //app.get('/del', index.del);
     //app.get('/getProjects', index.getProjects);
     //app.get('/sort', index.sort);
