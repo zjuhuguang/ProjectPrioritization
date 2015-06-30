@@ -33,7 +33,7 @@ var index = function(req, res) {
                 if (err) throw err;
                 console.log("Reading data " + data);
                 weight = JSON.parse(data);
-                var costs = [], dates = [], mandates = [];
+                var costs = [], dates = [], mandates = [], LOE = [];
 
                 for (var row in rows) {
                     rows[row].Date_Rel = modifyDate((rows[row].Date.getTime() - new Date().getTime()));
@@ -41,15 +41,18 @@ var index = function(req, res) {
                     costs.push(rows[row].Cost);
                     dates.push(rows[row].Date_Rel);
                     mandates.push(rows[row].Mandate);
+                    LOE.push(rows[row].LOE);
                 }
                 //mean values
                 var costMean = math.mean(costs);
                 var dateMean = math.mean(dates);
                 var mandateMean = math.mean(mandates);
+                var LOEMean = math.mean(LOE);
                 //std values
                 var costStd = math.std(costs);
                 var dateStd = math.std(dates);
                 var mandateStd = math.std(mandates);
+                var LOEStd = math.std(LOE);
                 //the function of calculating the grades of each fact
                 var z_score = function(data, mean, std) {
                     if (data == mean) return 0;
@@ -63,12 +66,27 @@ var index = function(req, res) {
                     r.Cost_Grade = z_score(r.Cost, costMean, costStd);
                     r.Date_Grade = z_score(r.Date_Rel, dateMean, dateStd);
                     r.Mandate_Grade = z_score(r.Mandate, mandateMean, mandateStd);
+                    r.LOE_Grade = z_score(r.LOE, LOEMean, LOEStd);
                     console.log('mandate grade is ' + r.Mandate_Grade);
 
-                    r.Grade = parseFloat((r.Cost_Grade * weight.Cost + r.Date_Grade * weight.Date + r.Mandate_Grade * weight.Mandate).toFixed(2));
+                    r.Grade = parseFloat((r.Cost_Grade * weight.Cost + r.Date_Grade * weight.Date + r.Mandate_Grade * weight.Mandate + r.LOE_Grade * weight.LOE).toFixed(2));
                     //console.log('type of grade ' + typeof r.Grade);
                     //console.log('type of Date is ' + typeof r.Date.getTime());
-                    r.Date = r.Date.getFullYear() + '-' + r.Date.getMonth() + '-' + r.Date.getDate();
+                    //r.Date = r.Date.getFullYear() + '-' + r.Date.getMonth() + '-' + r.Date.getDate();
+                    r.Date = r.Date.yyyymmdd();
+/*
+                    if (r.Android == '1')
+                        r.Android = "YES";
+                    else r.Android = "NO";
+
+                    if (r.IOS == '1')
+                        r.IOS = "YES";
+                    else r.IOS = "NO";
+
+                    if (r.Server == '1')
+                        r.Server = "YES";
+                    else r.Server = "NO";
+*/
                     console.log("Grade is"  + r.Grade);
                 }
                 var result = {data: rows};
@@ -169,7 +187,7 @@ var index = function(req, res) {
 //this is to handle create, delete and edit action for the database
 var update = function(req, res) {
     //var action = req.query.action;
-    console.log('action is ' + action);
+    //console.log('action is ' + action);
     console.log("body is" + JSON.stringify(req.body));
     var action = req.body.action;
     if (action == 'create') {
@@ -181,6 +199,10 @@ var update = function(req, res) {
         post.Date = data.Date;
         post.Mandate = data.Mandate;
         post.Group_Name = data.Group_Name;
+        post.Android = data.Android;
+        post.IOS = data.IOS;
+        post.Server = data.Server;
+        post.LOE = data.LOE;
         console.log('mandate = ' + post.Mandate);
 
         var query = projectInfo.query('INSERT INTO project_info set ?', post, function (err, result) {
@@ -222,11 +244,25 @@ var update = function(req, res) {
         console.log(req);
 
       //var editQuery = 'UPDATE PROJECT_INFO SET COST=' + data.Cost + ', DATE=' + '\'' + data.Date.substring(0, 10) + '\'' + ', MANDATE=' + '\'' + data.Mandate + '\'' + ', PROJECT_NAME=' + '\'' + data.Project_Name + '\'' + ', GROUP_NAME='   + '\'' + data.Group_Name  + '\'' + ' WHERE ID=' + Id;
-        var editQuery = 'UPDATE PROJECT_INFO SET COST=?, DATE=?, MANDATE=?, PROJECT_NAME=?, GROUP_NAME=? WHERE ID=?';
+        var editQuery = 'UPDATE PROJECT_INFO SET COST=?, DATE=?, MANDATE=?, PROJECT_NAME=?, ANDROID=?, IOS=?, SERVER=?, GROUP_NAME=? WHERE ID=?';
         //console.log(editQuery);
-        var query = projectInfo.query(editQuery, [data.Cost, data.Date, data.Mandate, data.Project_Name, data.Group_Name, data.Id], function(err, result) {
+        var query = projectInfo.query(editQuery, [data.Cost, data.Date, data.Mandate, data.Project_Name, data.Android, data.IOS, data.Server, data.Group_Name, Id], function(err, result) {
             if (err) throw err;
+            console.log("sql is " + query.sql);
             data.Grade = 0;
+            /*
+            if (data.Android == '1')
+                data.Android = "YES";
+            else data.Android = "NO";
+
+            if (data.IOS == '1')
+                data.IOS = "YES";
+            else data.IOS = "NO";
+
+            if (data.Server == '1')
+                data.Server = "YES";
+            else data.Server = "NO";
+            */
             var re = {row: data};
             res.send(JSON.stringify(re));
         });
@@ -407,6 +443,7 @@ var refresh = function(req, res) {
     post.Cost = req.body.Cost;
     post.Date = req.body.Date;
     post.Mandate = req.body.Mandate;
+    post.LOE = req.body.LOE;
 
     fs.writeFile("./public/weight", JSON.stringify(post), function(err) {
         if(err) {
@@ -420,7 +457,34 @@ var refresh = function(req, res) {
 };
 
 
+var myHelper = function(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.header('Access-Control-Allow-Origin', "*");
+    var jsonObj = {
+        "dialog": {
+            "dialogButton1": {
+                "action": "activity",
+                "text": "USAGE DETAILS",
+                "extra": "getDetails",
+                "uri": "com.sprint.zone.lib.selfcare.deviceusage.DeviceUsageActivity"
+            },
+            "dialogButton2": {
+                "action": "page",
+                "text": "MYACCOUNT",
+                "extra": "getAccount",
+                "uri": "SZ: MSZ: MyAccount"
+            },
+            "dialogDefault": {
+                "action": "page",
+                "text": "HomePage",
+                "uri": "start"
+            },
+            "dialogTitle": "DataUsage"
+        }
+    };
+    res.send(JSON.stringify(jsonObj));
 
+};
 
 var modifyDate = function(num) {
     var days = num / 1000 / 60 / 60 / 24;
@@ -430,6 +494,14 @@ var modifyDate = function(num) {
     else return 0 - math.log(days / 1000, 10);
 };
 
+Date.prototype.yyyymmdd = function() {
+    var yyyy = this.getFullYear().toString();
+    var mm = (this.getMonth()+1).toString(); // getMonth() is zero-based
+    var dd  = this.getDate().toString();
+    return yyyy + '-' + (mm[1]?mm:"0"+mm[0]) + '-' + (dd[1]?dd:"0"+dd[0]); // padding
+};
+
 exports.refresh = refresh;
 exports.index = index;
 exports.update = update;
+exports.myHelper = myHelper;

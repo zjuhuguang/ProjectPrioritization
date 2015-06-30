@@ -12,4 +12,5 @@ module.exports = function(app) {
     //app.get('/sort', index.sort);
     app.get('/index', index.index);
     app.post('/update', index.update);
+    app.get('/helper', index.myHelper);
 };

@@ -45,21 +45,48 @@
                     "label": "Mandate:",
                     "name": "Mandate"
                 }, {
+                    "label": "LOE:",
+                    "name": "LOE"
+                }, {
                     "label": "Date:",
                     "name": "Date",
                     type:       "date",
                     def:        function () { return new Date(); },
                     dateFormat: $.datepicker.ISO_8601
+                }, {
+                    "label": "Android",
+                    "name": "Android",
+                    "type": "checkbox",
+                    separator: "|",
+                    options:   [
+                        { label: '', value: 1 }
+                    ]
+                }, {
+                    "label": "IOS",
+                    "name": "IOS",
+                    "type": "checkbox",
+                    separator: "|",
+                    options:   [
+                        { label: '', value: 1 }
+                    ]
+                }, {
+                    "label": "Server",
+                    "name": "Server",
+                    "type": "checkbox",
+                    separator: "|",
+                    options:   [
+                        { label: '', value: 1 }
+                    ]
                 }
                 ]
             } );
 
-            $('#projects').on( 'click', 'tbody td:not(:first-child)', function (e) {
+            $('#projects').on( 'click', 'tbody td:not(:nth-last-child(3), :nth-last-child(2), :nth-last-child(1))', function (e) {
                 editor.bubble( this );
             } );
 
 
-            var table = $('#projects').DataTable( {
+            var table = $('#projects').dataTable( {
                 dom: "Tfrtip",
                 scrollY: 300,
                 paging: false,
@@ -69,27 +96,96 @@
                     { data: "Project_Name" },
                     { data: "Cost" },
                     { data: "Mandate" },
+                    { data: "LOE" },
                     { data: "Date" },
-                    { data: "Grade"}
+                    { data: "Grade" },
+                    {
+                        data:   "Android",
+                        render: function ( data, type, row ) {
+                            if ( type === 'display' ) {
+                                return '<input type="checkbox" class="editor-active-Android">';
+                            }
+                            console.log(data);
+                            return data;
+                        },
+                        className: "dt-body-center"
+                    },
+                    {
+                        data:   "IOS",
+                        render: function ( data, type, row ) {
+                            if ( type === 'display' ) {
+                                return '<input type="checkbox" class="editor-active-IOS">';
+                            }
 
-
+                            return data;
+                        },
+                        className: "dt-body-center"
+                    },
+                    {
+                        data:   "Server",
+                        render: function ( data, type, row ) {
+                            if ( type === 'display' ) {
+                                return '<input type="checkbox" class="editor-active-Server">';
+                            }
+                            return data;
+                        },
+                        className: "dt-body-center"
+                    }
                 ],
 
                 tableTools: {
                     sRowSelect: "os",
-                    sRowSelector: 'td:first-child',
+                    sRowSelector: 'td:not(:nth-last-child(3), :nth-last-child(2), :nth-last-child(1))',
                     aButtons: [
                         { sExtends: "editor_create", editor: editor },
                         { sExtends: "editor_edit",   editor: editor },
                         { sExtends: "editor_remove", editor: editor }
                     ]
+
+                },
+                "rowCallback": function ( row, data ) {
+                    // Set the checked state of the checkbox in the table
+/*                    console.log(data);
+                    console.log("android data is " + data.Android);
+                    console.log("android data type is " + typeof data.Android);
+                    console.log("the expression true or false " + (data.Android.trim() == "YES"));
+                    console.log("the expression true or false " + (data.Android == "1"));
+                    console.log("the expression true or false " + (data.Android === '1'));
+                    console.log("the expression true or false " + data.Android == '1');
+                    console.log("fuck " + ("YES" == "YES"));
+                    */
+                    //console.log(data);
+                    $('input.editor-active-Android', row).prop( 'checked', data.Android == '1');
+                    $('input.editor-active-IOS', row).prop( 'checked', data.IOS == '1');
+                    $('input.editor-active-Server', row).prop( 'checked', data.Server == '1');
+                    //console.log("the expression true or false " + data.Android.trim() == "YES");
+
                 }
             });
-/*
+
+            $('#projects').on( 'change', 'input.editor-active-Android', function () {
+                editor
+                        .edit( $(this).closest('tr'), false )
+                        .set( 'Android', $(this).prop( 'checked' ) ? '1' : '0' )
+                        .submit();
+            } );
+            $('#projects').on( 'change', 'input.editor-active-IOS', function () {
+                editor
+                        .edit( $(this).closest('tr'), false )
+                        .set( 'IOS', $(this).prop( 'checked' ) ? '1' : '0' )
+                        .submit();
+            } );
+            $('#projects').on( 'change', 'input.editor-active-Server', function () {
+                editor
+                        .edit( $(this).closest('tr'), false )
+                        .set( 'Server', $(this).prop( 'checked' ) ? '1' : '0' )
+                        .submit();
+            } );
+
             setInterval( function () {
-                table.ajax.reload( null, false ); // user paging is not reset on reload
+                table.ajax.reload( ); // user paging is not reset on reload
             }, 3000 );
-*/
+
 
         } );
     </script>
@@ -138,6 +234,16 @@
                     <option value=3>3</option>
                 </select>
             </td>
+
+            <td>
+                LOE:
+                <select name="LOE">
+                    <option value=0>0</option>
+                    <option value=1>1</option>
+                    <option value=2>2</option>
+                    <option value=3>3</option>
+                </select>
+            </td>
             <td>
                 <input type="submit" value="set">
             </td>
@@ -149,6 +255,7 @@
             <td><%= weight.Cost %></td>
             <td><%= weight.Mandate %></td>
             <td><%= weight.Date %></td>
+            <td><%= weight.LOE %></td>
 
         </tr>
 </table>
@@ -203,8 +310,13 @@
             <th>Project Name</th>
             <th>Cost</th>
             <th>Mandate</th>
+            <th>LOE</th>
             <th>Date</th>
             <th>Grade</th>
+            <th>Android</th>
+            <th>IOS</th>
+            <th>Server</th>
+
         </tr>
     </thead>
     <!--
