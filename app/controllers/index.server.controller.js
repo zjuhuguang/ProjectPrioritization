@@ -6,6 +6,7 @@
 var mysql = require('mysql');
 var fs = require('fs');
 var math = require('mathjs');
+var path = require('path');
 
 var projectInfo = mysql.createConnection(
     {
@@ -100,7 +101,7 @@ var index = function(req, res) {
         if (err) throw err;
         console.log("Reading data " + data);
         var weight = JSON.parse(data);
-        res.render('insert', {weight: weight});
+        res.render('index2.html');
     });
     /*
 
@@ -190,6 +191,7 @@ var update = function(req, res) {
     //console.log('action is ' + action);
     console.log("body is" + JSON.stringify(req.body));
     var action = req.body.action;
+    console.log(action);
     if (action == 'create') {
         var data = req.body.data;
         var post = {};

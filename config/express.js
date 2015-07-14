@@ -3,6 +3,8 @@
  */
 var express = require('express');
 var bodyParser = require('body-parser');
+//var path = require('path');
+var engines = require('consolidate');
 
 module.exports = function() {
     var app = express();
@@ -12,10 +14,12 @@ module.exports = function() {
         extended: true
     }));
 
-    app.use(express.static('public'));
+    app.use(express.static(__dirname + '/../public'));
 
     app.set('views', './app/views');
-    app.set('view engine', 'ejs');
+    //app.set('view engine', 'ejs');
+    app.engine('html', engines.mustache);
+    app.set('view engine', 'html');
     require('../app/routes/index.server.routes.js')(app);
     return app;
 };
