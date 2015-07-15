@@ -90,7 +90,7 @@ var index = function(req, res) {
 */
                     console.log("Grade is"  + r.Grade);
                 }
-                var result = {data: rows};
+                var result = rows;
                 res.send(JSON.stringify(result));
             });
         });
@@ -226,6 +226,7 @@ var update = function(req, res) {
     else if (action == 'remove') {
         var Id = req.body.id;
         console.log(Id);
+        /*
         for (var i = 0; i < Id.length; ++i) {
             var delQuery = 'DELETE FROM PROJECT_INFO WHERE ID =' + Id[i];
             var query = projectInfo.query(delQuery, function (err, result) {
@@ -236,6 +237,15 @@ var update = function(req, res) {
                 //insert(req, res);
             })
         }
+        */
+        var delQuery = 'DELETE FROM PROJECT_INFO WHERE ID =' + Id;
+        var query = projectInfo.query(delQuery, function (err, result) {
+            if (err) throw err;
+            //res.redirect('/insert');
+
+
+            //insert(req, res);
+        });
         var re = {};
         res.send(JSON.stringify(re));
     }

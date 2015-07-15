@@ -17,6 +17,7 @@
     <script type="text/javascript" src="/jqwidgets/jqxlistbox.js"></script>
     <script type="text/javascript" src="/jqwidgets/jqxdatetimeinput.js"></script>
     <script type="text/javascript" src="/jqwidgets/jqxcalendar.js"></script>
+    <script type="text/javascript" src="/jqwidgets/jqxInput.js"></script>
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -56,82 +57,225 @@
             */
             //console.log(typeof data);
 
-            var source =
-            {
-                url: "http://localhost:8017/index?action=queryProjects",
-                datatype: "json",
-                datafield: [
-                    { name: 'Cost' },
-                    { name: 'Date' },
-                    { name: 'Mandate' },
-                    { name: 'Project_Name' },
-                    { name: 'Group_Name' }
-                ]
-            };
-            //console.log(source);
-            var dataAdapter = new $.jqx.dataAdapter(source, {
-                loadComplete: function (data) { },
-                loadError: function (xhr, status, error) { }
-            });
-            //console.log(dataAdapter);
+            $.get("/index?action=queryProjects", function(data) {
 
-            var initrowdetails = function (index, parentElement, gridElement, datarecord) {
-                var details = $($(parentElement).children()[0]);
-                details.html("Details: " + datarecord.Grade);
-                console.log(gridElement);
-                console.log(datarecord);
-            };
+
+                //console.log(data);
+                var names = [];
+                var len = data.length;
+                var group_name = new Set();
+                for (var i = 0; i < len; ++i) {
+                    data[i].Date_Val = new Date(data[i].Date);
+                    names.push(data[i].Group_Name);
+                }
+
+                console.log(group_name);
+
+                var uniqueNames = [];
+
+                //----这方法真尼玛脏----
+                $.each(names, function(i, el){
+                    if($.inArray(el, uniqueNames) === -1) uniqueNames.push(el);
+                });
+                //--------------------
+
+
+
+
+                // set the group name input
+                $("#groupnameinput").jqxInput({
+                    placeHolder: "Enter a GroupName",
+                    height: 25,
+                    width: 200,
+                    minLength: 1,
+                    source: uniqueNames,
+                    theme:'energyblue'
+                });
+
+                var source =
+                {
+                    localdata: data,
+                    datatype: "array",
+                    datafield: [
+                        { name: 'Cost' },
+                        { name: 'Date_Val' },
+                        { name: 'Mandate' },
+                        { name: 'Project_Name' },
+                        { name: 'Group_Name' }
+                    ]
+                };
+
+                //console.log(source);
+                /*
+                 var dataAdapter = new $.jqx.dataAdapter(source, {
+                 loadComplete: function (data) { },
+                 loadError: function (xhr, status, error) { }
+                 });
+                 */
+                //console.log(dataAdapter);
+
+
+
+                var initrowdetails = function (index, parentElement, gridElement, datarecord) {
+                    var details = $($(parentElement).children()[0]);x
+                    details.html("Details: " + datarecord.Grade);
+                    console.log(gridElement);
+                    console.log(datarecord);
+                };
+
+
+
+                var cellsrenderer = function (row, columnfield, value, defaulthtml, columnproperties) {
+
+                    return '<span style="width: 100%; height:100%; background-color: red; backmargin: 4px; float: ' + columnproperties.cellsalign + '; color: #0000ff;">' + '</span>';
+
+                };
+
+
+
+                //console.log(dataAdapter);
+                $("#jqxgrid").jqxGrid(
+                        {
+                            source: source,
+                            columns: [
+                                { text: 'Cost', columntype: 'NumberInput', datafield: 'Cost', width: 100 },
+                                { text: 'Date', columntype: 'datetimeinput', cellsformat : 'yyyy-MM-dd', datafield: 'Date_Val', width: 100 },
+                                //{ text: 'Date', datafield: 'Date', width: 100 },
+                                { text: 'Mandate', columntype: 'dropdownlist', datafield: 'Mandate', width: 180, cellsrenderer: cellsrenderer },
+                                { text: 'Group Name', datafield: 'Group_Name', width: 80, cellsalign: 'right' },
+                                { text: 'Project Name', datafield: 'Project_Name', width: 90, cellsalign: 'right', cellsformat: 'c2' }
+                            ],
+                            sortable: true,
+                            editable: true,
+                            editmode: 'dblclick',
+
+                            rowdetails: true,
+                            rowdetailstemplate: {
+                                rowdetails: "<div style='margin: 10px;'>Row Details</div>",
+                                rowdetailsheight: 50
+                            },
+                            initrowdetails: initrowdetails
+
+                        });
+
+            });
+
 
             $("#updaterowbutton").jqxButton({
                 theme: 'energyblue',
-                height: 30
+                height: 30,
+                disabled: true
             });
 
             $("#deleterowbutton").jqxButton({
                 theme: 'energyblue',
                 height: 30
             });
+            $("#createrowbutton").jqxButton({
+                theme: 'energyblue',
+                height: 30
+            });
 
-            //console.log(dataAdapter);
-            $("#jqxgrid").jqxGrid(
-                {
-                    source: dataAdapter,
-                    columns: [
-                        { text: 'Cost', columntype: 'NumberInput', datafield: 'Cost', width: 100 },
-                        { text: 'Date', columntype: 'datetimeinput', cellsformat : 'yyyy-M-d', datafield: 'Date', width: 100 },
-                        //{ text: 'Date', datafield: 'Date', width: 100 },
-                        { text: 'Mandate', columntype: 'dropdownlist', datafield: 'Mandate', width: 180 },
-                        { text: 'Group Name', datafield: 'Group_Name', width: 80, cellsalign: 'right' },
-                        { text: 'Project Name', datafield: 'Project_Name', width: 90, cellsalign: 'right', cellsformat: 'c2' }
-                    ],
-                    sortable: true,
-                    editable: true,
-                    editmode: 'dblclick',
+            //var isEdited = false;
 
-                    rowdetails: true,
-                    rowdetailstemplate: {
-                        rowdetails: "<div style='margin: 10px;'>Row Details</div>",
-                        rowdetailsheight: 50
-                    },
-                    initrowdetails: initrowdetails
+            $("#jqxgrid").on('cellendedit', function (event) {
+                console.log(event);
+                var args = event.args;
+                if (String(args.oldvalue) != args.value) {
+                    $("#updaterowbutton").jqxButton({disabled: false});
+                }
 
-                });
-            $('#jqxGrid').on('rowclick', function () {});
+            });
+
+            //$('#jqxGrid').on('rowclick', function () {});
+
+
 
             $("#deleterowbutton").on('click', function () {
                 var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
-                //console.log(selectedrowindex);
+
+                var rowscount = $("#jqxgrid").jqxGrid('getdatainformation').rowscount;
+
+                if (selectedrowindex >= 0 && selectedrowindex < rowscount) {
+                    var id = $("#jqxgrid").jqxGrid('getrowid', selectedrowindex);
+                    var data = $('#jqxgrid').jqxGrid('getrowdata', id);
+                    console.log(data);
+                    $.post("http://localhost:8017/update", { id: data.Id, action: "remove"});
+                    var commit = $("#jqxgrid").jqxGrid('deleterow', id);
+                }
+            });
+
+            $("#updaterowbutton").on('click', function() {
+                var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
                 var rowscount = $("#jqxgrid").jqxGrid('getdatainformation').rowscount;
                 //console.log(rowscount);
                 if (selectedrowindex >= 0 && selectedrowindex < rowscount) {
                     var id = $("#jqxgrid").jqxGrid('getrowid', selectedrowindex);
-                    var data = $('#jqxgrid').jqxGrid('getrowdata', 0);
+                    var data = $('#jqxgrid').jqxGrid('getrowdata', id);
                     console.log(data);
-                    $.post("http://localhost:8017/update", { Id: data.Id, action: "remove"});
-                    console.log(id);
-                    var commit = $("#jqxgrid").jqxGrid('deleterow', id);
+
+                    $.post("/update", { action: "edit", data: data, id: data.Id });
+                    //var commit = $("#jqxgrid").jqxGrid('deleterow', id);
                 }
             });
+
+            $("#createrowbutton").on('click', function() {
+
+                var data = {};
+                data.Group_Name = $("#groupnameinput").jqxInput('val');
+                data.Project_Name = $("#projectnameinput").jqxInput('val');
+                data.Cost = $("#costinput").jqxDropDownList('getSelectedItem');
+                data.Date = $("#dateinput").jqxDateTimeInput('getDate').yyyymmdd();
+                //console.log(data.Date);
+                data.Mandate = $("#mandateinput").jqxDropDownList('getSelectedItem');
+                
+
+
+
+            });
+
+
+            //the form jquery things
+
+            $("#projectnameinput").jqxInput({
+                    placeHolder: "Enter a Project Name",
+                    height: 25,
+                    width: 200,
+                    minLength: 1,
+                    theme: 'energyblue'
+                }
+            );
+
+            var gradeSource = [1, 2, 3, 4, 5];
+            $("#costinput").jqxDropDownList({
+                source: gradeSource,
+                theme: 'energyblue',
+                width: '200px',
+                height: '25px'
+            });
+
+            $("#dateinput").jqxDateTimeInput({
+                width: '250px',
+                height: '25px',
+                theme: 'energyblue',
+                value: new Date()
+            });
+
+            $("#mandateinput").jqxDropDownList({
+                source: gradeSource,
+                theme: 'energyblue',
+                width: '200px',
+                height: '25px'
+            });
+
+            // helper function
+
+            Date.prototype.yyyymmdd = function() {
+                var yyyy = this.getFullYear().toString();
+                var mm = (this.getMonth()+1).toString(); // getMonth() is zero-based
+                var dd  = this.getDate().toString();
+                return yyyy + '-' + (mm[1]?mm:"0"+mm[0]) + '-' + (dd[1]?dd:"0"+dd[0]); // padding
+            };
 
         });
     </script>
@@ -145,9 +289,32 @@
     <input id="updaterowbutton" type="button" value="Update Selected Row" />
 </div>
 
+
 <div style="margin-top: 10px;">
     <input id="deleterowbutton" type="button" value="Delete Selected Row" />
 </div>
+
+<form action="/update?action=create">
+
+
+    <input type="text" name="Group_Name" id="groupnameinput" />
+    <br>
+    <input type="text" name="Project_Name" id="projectnameinput"/>
+    <div id="costinput"></div>
+    <div id="dateinput"></div>
+    <div id="mandateinput"></div>
+
+
+</form>
+
+
+<div style="margin-top: 10px;">
+    <input id="createrowbutton" type="button" value="Create Selected Row" />
+</div>
+
+
+
+
 
 </body>
 </html>
