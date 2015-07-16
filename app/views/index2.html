@@ -3,6 +3,7 @@
 <head>
     <title id='Description'>This example shows how to create a Grid from Array data.</title>
     <link rel="stylesheet" href="/jqwidgets/styles/jqx.base.css" type="text/css" />
+    <link rel="stylesheet" href="/jqwidgets/styles/jqx.energyblue.css" type="text/css" />
     <script type="text/javascript" src="/scripts/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="/jqwidgets/jqxcore.js"></script>
     <script type="text/javascript" src="/jqwidgets/jqxdata.js"></script>
@@ -66,6 +67,9 @@
                 var group_name = new Set();
                 for (var i = 0; i < len; ++i) {
                     data[i].Date_Val = new Date(data[i].Date);
+                    data[i].IOS_val = (data[i].IOS == '1')? '√': '×';
+                    data[i].Android_val = (data[i].Android == '1')? '√': '×';
+                    data[i].Server_val = (data[i].Server == '1')? '√': '×';
                     names.push(data[i].Group_Name);
                 }
 
@@ -102,6 +106,7 @@
                         { name: 'Mandate' },
                         { name: 'Project_Name' },
                         { name: 'Group_Name' }
+
                     ]
                 };
 
@@ -117,23 +122,29 @@
 
 
                 var initrowdetails = function (index, parentElement, gridElement, datarecord) {
-                    var details = $($(parentElement).children()[0]);x
-                    details.html("Details: " + datarecord.Grade);
-                    console.log(gridElement);
-                    console.log(datarecord);
+                    var details = $($(parentElement).children()[0]);
+                    details.html("Project Description: " + datarecord.Project_Info);
+
                 };
 
 
 
+                var cellsrenderermandate = function (row, columnfield, value, defaulthtml, columnproperties) {
+
+                    //console.log(columnproperties);
+
+                    return '<span style="width: 100%; height:100%; background-color: red; float: right;">' +value+ '</span>';
+
+                };
+/*
                 var cellsrenderer = function (row, columnfield, value, defaulthtml, columnproperties) {
-
-                    return '<span style="width: 100%; height:100%; background-color: red; backmargin: 4px; float: ' + columnproperties.cellsalign + '; color: #0000ff;">' + '</span>';
-
+                    console.log(columnproperties);
+                    if (value == '√') return '<span style="width: 100%; height:100%; background-color: red; float: right;">' + value +  '</span>';
                 };
+*/
 
 
-
-                //console.log(dataAdapter);
+                    //console.log(dataAdapter);
                 $("#jqxgrid").jqxGrid(
                         {
                             source: source,
@@ -141,9 +152,12 @@
                                 { text: 'Cost', columntype: 'NumberInput', datafield: 'Cost', width: 100 },
                                 { text: 'Date', columntype: 'datetimeinput', cellsformat : 'yyyy-MM-dd', datafield: 'Date_Val', width: 100 },
                                 //{ text: 'Date', datafield: 'Date', width: 100 },
-                                { text: 'Mandate', columntype: 'dropdownlist', datafield: 'Mandate', width: 180, cellsrenderer: cellsrenderer },
+                                { text: 'Mandate', columntype: 'dropdownlist', datafield: 'Mandate', width: 180, cellsrenderer: cellsrenderermandate },
                                 { text: 'Group Name', datafield: 'Group_Name', width: 80, cellsalign: 'right' },
-                                { text: 'Project Name', datafield: 'Project_Name', width: 90, cellsalign: 'right', cellsformat: 'c2' }
+                                { text: 'Project Name', datafield: 'Project_Name', width: 90, cellsalign: 'right', cellsformat: 'c2' },
+                                { text: 'IOS', columntype: 'dropdownlist', datafield: 'IOS_val', width: 80, cellsalign: 'right' },
+                                { text: 'Android', columntype: 'dropdownlist', datafield: 'Android_val', width: 80, cellsalign: 'right' },
+                                { text: 'Server', columntype: 'dropdownlist', datafield: 'Server_val', width: 80, cellsalign: 'right' }
                             ],
                             sortable: true,
                             editable: true,
@@ -223,12 +237,20 @@
 
                 var data = {};
                 data.Group_Name = $("#groupnameinput").jqxInput('val');
+                console.log(typeof data.Group_Name);
                 data.Project_Name = $("#projectnameinput").jqxInput('val');
-                data.Cost = $("#costinput").jqxDropDownList('getSelectedItem');
+                data.Cost = $("#costinput").jqxDropDownList('getSelectedItem').label;
                 data.Date = $("#dateinput").jqxDateTimeInput('getDate').yyyymmdd();
                 //console.log(data.Date);
-                data.Mandate = $("#mandateinput").jqxDropDownList('getSelectedItem');
-                
+                data.Mandate = $("#mandateinput").jqxDropDownList('getSelectedItem').label;
+                data.LOE = $("#loeinput").jqxDropDownList('getSelectedItem').label;
+                data.IOS = ($("#iosinput").jqxDropDownList('getSelectedItem').label == '√')? '1': '0';
+                data.Android = ($("#androidinput").jqxDropDownList('getSelectedItem').label == '√')? '1': '0';
+                data.Server = ($("#serverinput").jqxDropDownList('getSelectedItem') == '√').label? '1': '0';
+                data.Project_Info = $("#projectinfoinput").jqxInput('val');
+
+                console.log(data);
+                $.post("/update", { action: "create", data: data});
 
 
 
@@ -262,11 +284,55 @@
             });
 
             $("#mandateinput").jqxDropDownList({
+                placeHolder: "Choose the Mandate",
                 source: gradeSource,
                 theme: 'energyblue',
                 width: '200px',
                 height: '25px'
             });
+
+            $("#loeinput").jqxDropDownList({
+                placeHolder: "Choose the LOE",
+                source: gradeSource,
+                theme: 'energyblue',
+                width: '200px',
+                height: '25px'
+            });
+
+            var source = ['Yes', 'No'];
+
+            $("#iosinput").jqxDropDownList({
+                placeHolder: "Need IOS?",
+                source: source,
+                theme: 'energyblue',
+                width: '100px',
+                height: '25px'
+            });
+
+            $("#androidinput").jqxDropDownList({
+                placeHolder: "Need Android?",
+                source: source,
+                theme: 'energyblue',
+                width: '100px',
+                height: '25px'
+            });
+
+            $("#serverinput").jqxDropDownList({
+                placeHolder: "Need Server?",
+                source: source,
+                theme: 'energyblue',
+                width: '100px',
+                height: '25px'
+            });
+
+            $("#projectinfoinput").jqxInput({
+                        placeHolder: "Enter a Project Description",
+                        height: 75,
+                        width: 400,
+                        minLength: 1,
+                        theme: 'energyblue'
+                    }
+            );
 
             // helper function
 
@@ -303,6 +369,11 @@
     <div id="costinput"></div>
     <div id="dateinput"></div>
     <div id="mandateinput"></div>
+    <div id="loeinput"></div>
+    <div id="iosinput"></div>
+    <div id="androidinput"></div>
+    <div id="serverinput"></div>
+    <input type="text" name="Project_Info" id="projectinfoinput">
 
 
 </form>

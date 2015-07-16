@@ -205,6 +205,7 @@ var update = function(req, res) {
         post.IOS = data.IOS;
         post.Server = data.Server;
         post.LOE = data.LOE;
+        post.Project_Info = data.Project_Info;
         console.log('mandate = ' + post.Mandate);
 
         var query = projectInfo.query('INSERT INTO project_info set ?', post, function (err, result) {
