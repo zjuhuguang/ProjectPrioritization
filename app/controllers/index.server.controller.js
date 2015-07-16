@@ -465,8 +465,37 @@ var refresh = function(req, res) {
 
         console.log("The file was saved!");
         res.redirect('/index');
+
         //insert(req, res);
     });
+};
+
+var comment = function(req, res) {
+
+    var project_id = req.query.project_id;
+    //console.log(req);
+    var queryComment = 'SELECT * FROM COMMENT WHERE PROJECT_ID=';
+    projectInfo.query(queryComment + project_id, function(err, rows) {
+        if (err) throw err;
+        res.setHeader('Content-Type', 'application/json');
+        res.header('Access-Control-Allow-Origin', "*");
+        res.send(JSON.stringify(rows));
+    });
+
+};
+
+var postcomment = function(req, res) {
+
+    var post = {};
+    post.Project_Id = req.body.Project_Id;
+    post.Comment = req.body.Comment;
+    post.Commenter = req.body.Commenter;
+    projectInfo.query('INSERT INTO COMMENT set ?', post, function (err, result) {
+        if (err) throw err;
+
+    });
+
+
 };
 
 
@@ -518,3 +547,5 @@ exports.refresh = refresh;
 exports.index = index;
 exports.update = update;
 exports.myHelper = myHelper;
+exports.comment = comment;
+exports.postcomment = postcomment;

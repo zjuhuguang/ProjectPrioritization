@@ -4,6 +4,7 @@
     <title id='Description'>This example shows how to create a Grid from Array data.</title>
     <link rel="stylesheet" href="/jqwidgets/styles/jqx.base.css" type="text/css" />
     <link rel="stylesheet" href="/jqwidgets/styles/jqx.energyblue.css" type="text/css" />
+    <link rel="stylesheet" href="/styles/foundation.css"/>
     <script type="text/javascript" src="/scripts/jquery-1.11.1.min.js"></script>
     <script type="text/javascript" src="/jqwidgets/jqxcore.js"></script>
     <script type="text/javascript" src="/jqwidgets/jqxdata.js"></script>
@@ -147,6 +148,7 @@
                     //console.log(dataAdapter);
                 $("#jqxgrid").jqxGrid(
                         {
+                            width: "100%",
                             source: source,
                             columns: [
                                 { text: 'Cost', columntype: 'NumberInput', datafield: 'Cost', width: 100 },
@@ -190,6 +192,16 @@
                 height: 30
             });
 
+            $("#submitrowbutton").jqxButton({
+                theme: 'energyblue',
+                height: 30
+            });
+
+            $("#submitcomment").jqxButton({
+                theme: 'energyblue',
+                height: 30
+            });
+
             //var isEdited = false;
 
             $("#jqxgrid").on('cellendedit', function (event) {
@@ -200,10 +212,6 @@
                 }
 
             });
-
-            //$('#jqxGrid').on('rowclick', function () {});
-
-
 
             $("#deleterowbutton").on('click', function () {
                 var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
@@ -233,7 +241,7 @@
                 }
             });
 
-            $("#createrowbutton").on('click', function() {
+            $("#submitrowbutton").on('click', function() {
 
                 var data = {};
                 data.Group_Name = $("#groupnameinput").jqxInput('val');
@@ -248,14 +256,48 @@
                 data.Android = ($("#androidinput").jqxDropDownList('getSelectedItem').label == '√')? '1': '0';
                 data.Server = ($("#serverinput").jqxDropDownList('getSelectedItem') == '√').label? '1': '0';
                 data.Project_Info = $("#projectinfoinput").jqxInput('val');
-
                 console.log(data);
                 $.post("/update", { action: "create", data: data});
-
-
-
             });
 
+            $("#createrowbutton").on('click', function() {
+                $("#createforms").show();
+                $("#comment").hide()
+            });
+
+            $("#submitcomment").on('click', function() {
+                var data = {};
+                //console.log($(this));
+                //-----------use the .data method to get the custom attribute---
+                console.log($(this).data('projid'));
+                //--------------------------------------------------------------
+
+                data.Project_Id = $(this).data('projid');
+                data.Commenter = $("#commenterinput").jqxInput('val');
+                data.Comment = $("#commentinput").jqxInput('val');
+                $.post("/postcomment", data);
+            });
+
+
+            $('#jqxgrid').on('rowselect', function (event) {
+                console.log(event);
+                var args = event.args;
+                $("#createforms").hide();
+                $("#comment").show();
+                $("#project_description").text('Project description:' + args.row.Project_Info);
+                var project_id = args.row.Id;
+                //--------set the custom attribute----------------
+                $("#submitcomment").attr("data-projid", project_id);
+                //------------------------------------------------
+                $.get("/comment", { project_id: project_id }).done(function( data ) {
+                    var comment = "";
+                    for (var i = 0; i < data.length; ++i) {
+                        $("#project_comment").append('<li>' + data[i].Commenter + ': ' + data[i].Comment + '</li>');
+                        //comment += data[i].Commenter + ': ' + data[i].Comment + '\n';
+                    }
+                    //$("#project_comment").text(comment);
+                });
+            });
 
             //the form jquery things
 
@@ -334,6 +376,24 @@
                     }
             );
 
+            // comment input
+
+            $("#commenterinput").jqxInput({
+                placeHolder: "Enter your Name",
+                height: 25,
+                width: 200,
+                minLength: 1,
+                theme: 'energyblue'
+            });
+
+            $("#commentinput").jqxInput({
+                placeHolder: "Enter your comment",
+                height: 75,
+                width: 400,
+                minLength: 1,
+                theme: 'energyblue'
+            });
+
             // helper function
 
             Date.prototype.yyyymmdd = function() {
@@ -347,42 +407,72 @@
     </script>
 </head>
 <body class='default'>
-<div id='jqxWidget' style="font-size: 13px; font-family: Verdana; float: left;">
-    <div id="jqxgrid"></div>
+<div class="row">
+    <div class="large-10 columns">
+        <div id="jqxgrid"></div>
+
+
+        <div style="margin-top: 10px;">
+            <input id="updaterowbutton" type="button" value="Update Selected Row" />
+        </div>
+
+
+        <div style="margin-top: 10px;">
+            <input id="deleterowbutton" type="button" value="Delete Selected Row" />
+        </div>
+
+        <div style="margin-top: 10px;">
+            <input id="createrowbutton" type="button" value="Create a Row" />
+        </div>
+
+
+
+
+
+    </div>
+    <div class="large-2 columns">
+
+        <div id="createforms" hidden>
+            <br>
+            <input type="text" name="Group_Name" id="groupnameinput" />
+            <input type="text" name="Project_Name" id="projectnameinput"/>
+            <div id="costinput"></div>
+            <div id="dateinput"></div>
+            <div id="mandateinput"></div>
+            <div id="loeinput"></div>
+            <div id="iosinput"></div>
+            <div id="androidinput"></div>
+            <div id="serverinput"></div>
+            <input type="text" name="Project_Info" id="projectinfoinput">
+            <div style="margin-top: 10px;">
+                <input id="submitrowbutton" type="button" value="Submit the new Project" />
+            </div>
+        </div>
+
+        <div id="comment" hidden>
+            <div class="row">
+                <p id="project_description">
+                </p>
+            </div>
+
+            <div class="row">
+                <ul id="project_comment">
+                </ul>
+
+            </div>
+
+            <input type="text" name="Group_Name" id="commenterinput" />
+            <input type="text" name="Project_Name" id="commentinput"/>
+            <div style="margin-top: 10px;">
+                <input id="submitcomment" type="button" value="Submit the Comment" />
+            </div>
+
+
+
+
+        </div>
+    </div>
 </div>
-
-<div style="margin-top: 10px;">
-    <input id="updaterowbutton" type="button" value="Update Selected Row" />
-</div>
-
-
-<div style="margin-top: 10px;">
-    <input id="deleterowbutton" type="button" value="Delete Selected Row" />
-</div>
-
-<form action="/update?action=create">
-
-
-    <input type="text" name="Group_Name" id="groupnameinput" />
-    <br>
-    <input type="text" name="Project_Name" id="projectnameinput"/>
-    <div id="costinput"></div>
-    <div id="dateinput"></div>
-    <div id="mandateinput"></div>
-    <div id="loeinput"></div>
-    <div id="iosinput"></div>
-    <div id="androidinput"></div>
-    <div id="serverinput"></div>
-    <input type="text" name="Project_Info" id="projectinfoinput">
-
-
-</form>
-
-
-<div style="margin-top: 10px;">
-    <input id="createrowbutton" type="button" value="Create Selected Row" />
-</div>
-
 
 
 
