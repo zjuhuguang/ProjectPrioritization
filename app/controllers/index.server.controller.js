@@ -206,6 +206,7 @@ var update = function(req, res) {
         post.Server = data.Server;
         post.LOE = data.LOE;
         post.Project_Info = data.Project_Info;
+        post.Color = data.Color;
         console.log('mandate = ' + post.Mandate);
 
         var query = projectInfo.query('INSERT INTO project_info set ?', post, function (err, result) {
@@ -257,9 +258,9 @@ var update = function(req, res) {
         console.log(req);
 
       //var editQuery = 'UPDATE PROJECT_INFO SET COST=' + data.Cost + ', DATE=' + '\'' + data.Date.substring(0, 10) + '\'' + ', MANDATE=' + '\'' + data.Mandate + '\'' + ', PROJECT_NAME=' + '\'' + data.Project_Name + '\'' + ', GROUP_NAME='   + '\'' + data.Group_Name  + '\'' + ' WHERE ID=' + Id;
-        var editQuery = 'UPDATE PROJECT_INFO SET COST=?, DATE=?, MANDATE=?, PROJECT_NAME=?, ANDROID=?, IOS=?, SERVER=?, GROUP_NAME=? WHERE ID=?';
+        var editQuery = 'UPDATE PROJECT_INFO SET COST=?, DATE=?, MANDATE=?, PROJECT_NAME=?, ANDROID=?, IOS=?, SERVER=?, GROUP_NAME=?, COLOR=? WHERE ID=?';
         //console.log(editQuery);
-        var query = projectInfo.query(editQuery, [data.Cost, data.Date, data.Mandate, data.Project_Name, data.Android, data.IOS, data.Server, data.Group_Name, Id], function(err, result) {
+        var query = projectInfo.query(editQuery, [data.Cost, data.Date, data.Mandate, data.Project_Name, data.Android, data.IOS, data.Server, data.Group_Name, data.Color, Id], function(err, result) {
             if (err) throw err;
             console.log("sql is " + query.sql);
             data.Grade = 0;
@@ -492,7 +493,8 @@ var postcomment = function(req, res) {
     post.Commenter = req.body.Commenter;
     projectInfo.query('INSERT INTO COMMENT set ?', post, function (err, result) {
         if (err) throw err;
-
+        //console.log(result);
+        res.send(JSON.stringify(post));
     });
 
 
