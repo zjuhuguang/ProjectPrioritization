@@ -23,41 +23,7 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-            /*
-            // prepare the data
-            var data = [];
-            //console.log(typeof data);
-            var firstNames =
-                    [
-                        "Andrew", "Nancy", "Shelley", "Regina", "Yoshi", "Antoni", "Mayumi", "Ian", "Peter", "Lars", "Petra", "Martin", "Sven", "Elio", "Beate", "Cheryl", "Michael", "Guylene"
-                    ];
-            var lastNames =
-                    [
-                        "Fuller", "Davolio", "Burke", "Murphy", "Nagase", "Saavedra", "Ohno", "Devling", "Wilson", "Peterson", "Winkler", "Bein", "Petersen", "Rossi", "Vileid", "Saylor", "Bjorn", "Nodier"
-                    ];
-            var productNames =
-                    [
-                        "Black Tea", "Green Tea", "Caffe Espresso", "Doubleshot Espresso", "Caffe Latte", "White Chocolate Mocha", "Cramel Latte", "Caffe Americano", "Cappuccino", "Espresso Truffle", "Espresso con Panna", "Peppermint Mocha Twist"
-                    ];
-            var priceValues =
-                    [
-                        "2.25", "1.5", "3.0", "3.3", "4.5", "3.6", "3.8", "2.5", "5.0", "1.75", "3.25", "4.0"
-                    ];
-            for (var i = 0; i < 100; i++) {
-                var row = {};
-                var productindex = Math.floor(Math.random() * productNames.length);
-                var price = parseFloat(priceValues[productindex]);
-                var quantity = 1 + Math.round(Math.random() * 10);
-                row["firstname"] = firstNames[Math.floor(Math.random() * firstNames.length)];
-                row["lastname"] = lastNames[Math.floor(Math.random() * lastNames.length)];
-                row["productname"] = productNames[productindex];
-                row["price"] = price;
-                row["quantity"] = quantity;
-                row["total"] = price * quantity;
-                data[i] = row;
-            }
-            */
-            //console.log(typeof data);
+
 
             $.get("/index?action=queryProjects", function(data) {
 
@@ -158,64 +124,92 @@
 
 
                     //console.log(dataAdapter);
-                $("#jqxgrid").jqxGrid(
-                        {
-                            width: "100%",
-                            source: source,
-                            columns: [
-                                { text: 'Group Name', datafield: 'Group_Name', width: 100, cellsalign: 'center' },
-                                { text: 'Project Name', datafield: 'Project_Name', width: 90, cellsalign: 'center', cellsformat: 'c2' },
-                                { text: 'Cost', columntype: 'NumberInput', datafield: 'Cost', width: 100 },
-                                { text: 'Date', columntype: 'datetimeinput', cellsformat : 'yyyy-MM-dd', datafield: 'Date_Val', width: 100 },
-                                //{ text: 'Date', datafield: 'Date', width: 100 },
-                                { text: 'Mandate', columntype: 'dropdownlist', datafield: 'Mandate', width:60, cellsalign: "center",
-                                    initeditor: function (row, cellvalue, editor) {
-                                        var source = ['0', '1', '2', '3', '4'];
-                                        editor.jqxDropDownList({
-                                            source: source,
-                                            theme: 'energyblue',
-                                            width: '200px',
-                                            height: '25px'
-                                        });
-                                }},
-                                { text: 'LOE', columntype: 'dropdownlist', datafield: 'LOE', width:60, cellsalign: "center",
-                                    initeditor: function (row, cellvalue, editor) {
-                                        var source = ['0', '1', '2', '3', '4'];
-                                        editor.jqxDropDownList({
-                                            source: source,
-                                            theme: 'energyblue',
-                                            width: '200px',
-                                            height: '25px'
-                                        });
-                                    }},
-                                { text: 'IOS', columntype: 'dropdownlist', datafield: 'IOS_val', width: 80, cellsalign: 'right' },
-                                { text: 'Android', columntype: 'dropdownlist', datafield: 'Android_val', width: 80, cellsalign: 'right' },
-                                { text: 'Server', columntype: 'dropdownlist', datafield: 'Server_val', width: 80, cellsalign: 'right' },
-                                { text: 'Grade', datafield: 'Grade', width: 80, cellsalign: 'right', editable: false},
-                                { text: 'Color', columntype: 'dropdownlist', datafield: 'Color_val', width: 80, cellsrenderer: cellsrenderermandatecolor,
-                                    initeditor: function (row, cellvalue, editor) {
-                                        var source = ["blue", "red", "green"];
-                                        editor.jqxDropDownList({
-                                            source: source,
-                                            theme: 'energyblue',
-                                            width: '200px',
-                                            height: '25px'
-                                        });
-                                    }}
-                            ],
-                            sortable: true,
-                            editable: true,
-                            editmode: 'dblclick',
-/*
-                            rowdetails: true,
-                            rowdetailstemplate: {
-                                rowdetails: "<div style='margin: 10px;'>Row Details</div>",
-                                rowdetailsheight: 50
-                            },
-                            initrowdetails: initrowdetails
-                            */
+                $.get('/isAuthenticated', function(data) {
+                    console.log(data);
+                    var edited = false;
+                    if (data == 'authenticated') {
+                        $("#deleterowbutton").jqxButton({disabled: false});
+                        $("#createrowbutton").jqxButton({disabled: false});
+                        $("#logoutbutton").text('logout');
+                        edited = true;
+                    } else {
+                        $("#deleterowbutton").jqxButton({disabled: true});
+                        $("#createrowbutton").jqxButton({disabled: true});
+                        $("#logoutbutton").text('login');
+                    }
 
-                        });
+                    $.get('/getweight', function(data) {
+                        console.log(data);
+                        var weight = JSON.parse(data);
+
+                        $('#costselect').val(weight.Cost);
+                        $('#dateselect').val(weight.Date);
+                        $('#mandateselect').val(weight.Mandate);
+                        $('#loeselect').val(weight.LOE);
+                    });
+
+
+
+
+
+                    $("#jqxgrid").jqxGrid(
+                            {
+                                width: "100%",
+                                source: source,
+                                columns: [
+                                    { text: 'Group Name', datafield: 'Group_Name', width: 100, cellsalign: 'center' },
+                                    { text: 'Project Name', datafield: 'Project_Name', width: 90, cellsalign: 'center', cellsformat: 'c2' },
+                                    { text: 'Cost', columntype: 'NumberInput', datafield: 'Cost', width: 100 },
+                                    { text: 'Date', columntype: 'datetimeinput', cellsformat : 'yyyy-MM-dd', datafield: 'Date_Val', width: 100 },
+                                    //{ text: 'Date', datafield: 'Date', width: 100 },
+                                    { text: 'Mandate', columntype: 'dropdownlist', datafield: 'Mandate', width:60, cellsalign: "center",
+                                        initeditor: function (row, cellvalue, editor) {
+                                            var source = ['0', '1', '2', '3', '4'];
+                                            editor.jqxDropDownList({
+                                                source: source,
+                                                theme: 'energyblue',
+                                                width: '200px',
+                                                height: '25px'
+                                            });
+                                    }},
+                                    { text: 'LOE', columntype: 'dropdownlist', datafield: 'LOE', width:60, cellsalign: "center",
+                                        initeditor: function (row, cellvalue, editor) {
+                                            var source = ['0', '1', '2', '3', '4'];
+                                            editor.jqxDropDownList({
+                                                source: source,
+                                                theme: 'energyblue',
+                                                width: '200px',
+                                                height: '25px'
+                                            });
+                                        }},
+                                    { text: 'IOS', columntype: 'dropdownlist', datafield: 'IOS_val', width: 80, cellsalign: 'right' },
+                                    { text: 'Android', columntype: 'dropdownlist', datafield: 'Android_val', width: 80, cellsalign: 'right' },
+                                    { text: 'Server', columntype: 'dropdownlist', datafield: 'Server_val', width: 80, cellsalign: 'right' },
+                                    { text: 'Grade', datafield: 'Grade', width: 80, cellsalign: 'right', editable: false},
+                                    { text: 'Color', columntype: 'dropdownlist', datafield: 'Color_val', width: 80, cellsrenderer: cellsrenderermandatecolor,
+                                        initeditor: function (row, cellvalue, editor) {
+                                            var source = ["blue", "red", "green"];
+                                            editor.jqxDropDownList({
+                                                source: source,
+                                                theme: 'energyblue',
+                                                width: '200px',
+                                                height: '25px'
+                                            });
+                                        }}
+                                ],
+                                sortable: true,
+                                editable: edited,
+                                editmode: 'dblclick',
+    /*
+                                rowdetails: true,
+                                rowdetailstemplate: {
+                                    rowdetails: "<div style='margin: 10px;'>Row Details</div>",
+                                    rowdetailsheight: 50
+                                },
+                                initrowdetails: initrowdetails
+                                */
+
+                            });});
 
             });
 
@@ -244,8 +238,27 @@
                 theme: 'energyblue',
                 height: 30
             });
-
+/*
+            $("#logoutbutton").jqxButton({
+                theme: 'energyblue',
+                height: 30
+            });
+*/
             //var isEdited = false;
+
+            $("#logoutbutton").on('click', function() {
+                console.log($(this).text());
+                //if ($(this).)
+                if ($(this).text() == 'login') {
+                    console.log('go to');
+                    window.location.href="/login";
+                }
+                else {
+                    $.get('/logout', function (data) {
+                        location.reload();
+                    });
+                }
+            });
 
             $("#jqxgrid").on('cellendedit', function (event) {
                 console.log(event);
@@ -314,6 +327,29 @@
                 $("#createforms").show();
                 $("#comment").hide()
             });
+
+
+            $('#weightbutton').on('click', function() {
+
+                $.post('/refresh', {
+                    Cost: $('#costselect').val(),
+                    Date: $('#dateselect').val(),
+                    Mandate: $('#mandateselect').val(),
+                    LOE: $('#loeselect').val()
+                }).done(function (data) {
+                    $.get('/getweight', function(data) {
+                        console.log(data);
+                        var weight = JSON.parse(data);
+
+                        $('#costselect').val(weight.Cost);
+                        $('#dateselect').val(weight.Date);
+                        $('#mandateselect').val(weight.Mandate);
+                        $('#loeselect').val(weight.LOE);
+                    });
+                });
+
+            });
+
 
             $("#submitcomment").on('click', function() {
                 var data = {};
@@ -464,11 +500,75 @@
     </script>
 </head>
 <body class='default'>
+<nav class="top-bar" data-topbar role="navigation">
+    <ul class="title-area">
+        <li class="has-form">
+            <a class="button" id="logoutbutton">logout</a>
+        </li>
+        <!-- Remove the class "menu-icon" to get rid of menu icon. Take out "Menu" to just have icon alone -->
+        <li class="toggle-topbar menu-icon"><a href="#"><span>Menu</span></a></li>
+    </ul>
+</nav>
 <div class="row">
+    <br>
     <div class="large-10 columns">
 
-        <div id="jqxgrid"></div>
+        <!--
 
+        <div style="margin-top: 10px;">
+            <input id="logoutbutton" type="button" value="Logout" />
+        </div> -->
+
+
+        <div class="row">
+            <div class="large-2 columns">
+                <label> Cost
+                    <select id="costselect">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label> Date
+                    <select id="dateselect">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label> Mandate
+                    <select id="mandateselect">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <label> LOE
+                    <select id="loeselect">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </label>
+            </div>
+            <div class="large-2 columns">
+                <a class="button" id="weightbutton">Submit Weight</a>
+            </div>
+
+        </div>
+        <div class="row">
+            <div id="jqxgrid"></div>
+        </div>
 
         <div style="margin-top: 10px;">
             <input id="updaterowbutton" type="button" value="Update Selected Row" />
@@ -482,6 +582,7 @@
         <div style="margin-top: 10px;">
             <input id="createrowbutton" type="button" value="Create a Row" />
         </div>
+
 
 
 
@@ -524,7 +625,6 @@
             <div style="margin-top: 10px;">
                 <input id="submitcomment" type="button" value="Submit the Comment" />
             </div>
-
 
 
 

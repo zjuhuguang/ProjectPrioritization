@@ -471,6 +471,15 @@ var refresh = function(req, res) {
     });
 };
 
+var getWeight = function(req, res) {
+    fs.readFile('./public/weight', 'utf8', function (err,data) {
+        if (err) throw err;
+        console.log("Reading data " + data);
+        var weight = JSON.parse(data);
+        res.send(JSON.stringify(weight));
+    });
+};
+
 var comment = function(req, res) {
 
     var project_id = req.query.project_id;
@@ -498,6 +507,10 @@ var postcomment = function(req, res) {
     });
 
 
+};
+
+var login = function(req, res) {
+    res.render('login.html');
 };
 
 
@@ -551,3 +564,5 @@ exports.update = update;
 exports.myHelper = myHelper;
 exports.comment = comment;
 exports.postcomment = postcomment;
+exports.login = login;
+exports.getWeight = getWeight;
