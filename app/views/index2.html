@@ -20,6 +20,7 @@
     <script type="text/javascript" src="/jqwidgets/jqxdatetimeinput.js"></script>
     <script type="text/javascript" src="/jqwidgets/jqxcalendar.js"></script>
     <script type="text/javascript" src="/jqwidgets/jqxInput.js"></script>
+    <script type="text/javascript" src="/jqwidgets/jqxnumberinput.js"></script>
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -55,6 +56,7 @@
 
 
                 // set the group name input
+                /*
                 $("#groupnameinput").jqxInput({
                     placeHolder: "Enter a GroupName",
                     height: 25,
@@ -63,7 +65,7 @@
                     source: uniqueNames,
                     theme:'energyblue'
                 });
-
+*/
                 var source =
                 {
                     localdata: data,
@@ -78,32 +80,10 @@
                     ]
                 };
 
-                //console.log(source);
-                /*
-                 var dataAdapter = new $.jqx.dataAdapter(source, {
-                 loadComplete: function (data) { },
-                 loadError: function (xhr, status, error) { }
-                 });
-                 */
-                //console.log(dataAdapter);
 
 
 
-                var initrowdetails = function (index, parentElement, gridElement, datarecord) {
-                    var details = $($(parentElement).children()[0]);
-                    details.html("Project Description: " + datarecord.Project_Info);
 
-                };
-
-
-
-                var cellsrenderermandate = function (row, columnfield, value, defaulthtml, columnproperties) {
-
-                    //console.log(columnproperties);
-
-                    return '<span style="width: 100%; height:100%; background-color: red; float: right;">' + value + '</span>';
-
-                };
 
                 var cellsrenderermandatecolor = function (row, columnfield, value, defaulthtml, columnproperties) {
 
@@ -115,12 +95,6 @@
                 };
 
 
-/*
-                var cellsrenderer = function (row, columnfield, value, defaulthtml, columnproperties) {
-                    console.log(columnproperties);
-                    if (value == '√') return '<span style="width: 100%; height:100%; background-color: red; float: right;">' + value +  '</span>';
-                };
-*/
 
 
                     //console.log(dataAdapter);
@@ -128,13 +102,13 @@
                     console.log(data);
                     var edited = false;
                     if (data == 'authenticated') {
-                        $("#deleterowbutton").jqxButton({disabled: false});
-                        $("#createrowbutton").jqxButton({disabled: false});
+                        $("#deleterowbutton").attr('disabled', false);
+                        $("#createrowbutton").attr('disabled', false);
                         $("#logoutbutton").text('logout');
                         edited = true;
                     } else {
-                        $("#deleterowbutton").jqxButton({disabled: true});
-                        $("#createrowbutton").jqxButton({disabled: true});
+                        $("#deleterowbutton").attr('disabled', true);
+                        $("#createrowbutton").attr('disabled', true);
                         $("#logoutbutton").text('login');
                     }
 
@@ -157,6 +131,16 @@
                                 width: "100%",
                                 source: source,
                                 columns: [
+                                    { text: 'Color', columntype: 'dropdownlist', datafield: 'Color_val', width: 80, cellsrenderer: cellsrenderermandatecolor,
+                                        initeditor: function (row, cellvalue, editor) {
+                                            var source = ["blue", "red", "green"];
+                                            editor.jqxDropDownList({
+                                                source: source,
+                                                theme: 'energyblue',
+                                                width: '200px',
+                                                height: '25px'
+                                            });
+                                        }},
                                     { text: 'Group Name', datafield: 'Group_Name', width: 100, cellsalign: 'center' },
                                     { text: 'Project Name', datafield: 'Project_Name', width: 90, cellsalign: 'center', cellsformat: 'c2' },
                                     { text: 'Cost', columntype: 'NumberInput', datafield: 'Cost', width: 100 },
@@ -185,55 +169,24 @@
                                     { text: 'IOS', columntype: 'dropdownlist', datafield: 'IOS_val', width: 80, cellsalign: 'right' },
                                     { text: 'Android', columntype: 'dropdownlist', datafield: 'Android_val', width: 80, cellsalign: 'right' },
                                     { text: 'Server', columntype: 'dropdownlist', datafield: 'Server_val', width: 80, cellsalign: 'right' },
-                                    { text: 'Grade', datafield: 'Grade', width: 80, cellsalign: 'right', editable: false},
-                                    { text: 'Color', columntype: 'dropdownlist', datafield: 'Color_val', width: 80, cellsrenderer: cellsrenderermandatecolor,
-                                        initeditor: function (row, cellvalue, editor) {
-                                            var source = ["blue", "red", "green"];
-                                            editor.jqxDropDownList({
-                                                source: source,
-                                                theme: 'energyblue',
-                                                width: '200px',
-                                                height: '25px'
-                                            });
-                                        }}
+                                    { text: 'Grade', datafield: 'Grade', width: 80, cellsalign: 'right', editable: false}
+
                                 ],
                                 sortable: true,
                                 editable: edited,
-                                editmode: 'dblclick',
-    /*
-                                rowdetails: true,
-                                rowdetailstemplate: {
-                                    rowdetails: "<div style='margin: 10px;'>Row Details</div>",
-                                    rowdetailsheight: 50
-                                },
-                                initrowdetails: initrowdetails
-                                */
+                                editmode: 'dblclick'
 
                             });});
 
             });
 
-
-            $("#updaterowbutton").jqxButton({
-                theme: 'energyblue',
-                height: 30,
-                disabled: true
-            });
-
-            $("#deleterowbutton").jqxButton({
-                theme: 'energyblue',
-                height: 30
-            });
-            $("#createrowbutton").jqxButton({
-                theme: 'energyblue',
-                height: 30
-            });
+/*
 
             $("#submitrowbutton").jqxButton({
                 theme: 'energyblue',
                 height: 30
             });
-
+*/
             $("#submitcomment").jqxButton({
                 theme: 'energyblue',
                 height: 30
@@ -264,68 +217,84 @@
                 console.log(event);
                 var args = event.args;
                 if (String(args.oldvalue) != args.value) {
-                    $("#updaterowbutton").jqxButton({disabled: false});
+                    //$("#updaterowbutton").jqxButton({disabled: false});
+                    $("#updaterowbutton").attr('disabled', false);
                 }
 
             });
 
             $("#deleterowbutton").on('click', function () {
-                var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
-
-                var rowscount = $("#jqxgrid").jqxGrid('getdatainformation').rowscount;
-
-                if (selectedrowindex >= 0 && selectedrowindex < rowscount) {
-                    var id = $("#jqxgrid").jqxGrid('getrowid', selectedrowindex);
-                    var data = $('#jqxgrid').jqxGrid('getrowdata', id);
-                    console.log(data);
-                    $.post("http://localhost:8017/update", { id: data.Id, action: "remove"});
-                    var commit = $("#jqxgrid").jqxGrid('deleterow', id);
+                var disabled = $(this).attr('disabled');
+                if (!disabled) {
+                    var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
+                    var rowscount = $("#jqxgrid").jqxGrid('getdatainformation').rowscount;
+                    if (selectedrowindex >= 0 && selectedrowindex < rowscount) {
+                        var id = $("#jqxgrid").jqxGrid('getrowid', selectedrowindex);
+                        var data = $('#jqxgrid').jqxGrid('getrowdata', id);
+                        console.log(data);
+                        $.post("http://localhost:8017/update", {id: data.Id, action: "remove"});
+                        var commit = $("#jqxgrid").jqxGrid('deleterow', id);
+                    }
                 }
             });
 
             $("#updaterowbutton").on('click', function() {
-                var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
-                var rowscount = $("#jqxgrid").jqxGrid('getdatainformation').rowscount;
-                //console.log(rowscount);
-                if (selectedrowindex >= 0 && selectedrowindex < rowscount) {
-                    var id = $("#jqxgrid").jqxGrid('getrowid', selectedrowindex);
-                    var data = $('#jqxgrid').jqxGrid('getrowdata', id);
-                    data.Color = (data.Color_val == 'blue')? 2 : (data.Color_val == 'red')? 3 : 1;
+                var disabled = $(this).attr('disabled');
+                if (!disabled) {
+                    var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
+                    var rowscount = $("#jqxgrid").jqxGrid('getdatainformation').rowscount;
+                    //console.log(rowscount);
+                    if (selectedrowindex >= 0 && selectedrowindex < rowscount) {
+                        var id = $("#jqxgrid").jqxGrid('getrowid', selectedrowindex);
+                        var data = $('#jqxgrid').jqxGrid('getrowdata', id);
+                        data.Color = (data.Color_val == 'blue') ? 2 : (data.Color_val == 'red') ? 3 : 1;
 
-                    data.IOS = (data.IOS_val == '√')? '1' : '0';
-                    data.Android = (data.Android_val == '√')? '1' : '0';
-                    data.Server = (data.Server_val == '√')? '1' : '0';
-                    console.log(data);
+                        data.IOS = (data.IOS_val == '√') ? '1' : '0';
+                        data.Android = (data.Android_val == '√') ? '1' : '0';
+                        data.Server = (data.Server_val == '√') ? '1' : '0';
+                        console.log(data);
 
-                    $.post("/update", { action: "edit", data: data, id: data.Id });
-                    //var commit = $("#jqxgrid").jqxGrid('deleterow', id);
+                        $.post("/update", {action: "edit", data: data, id: data.Id});
+                        //var commit = $("#jqxgrid").jqxGrid('deleterow', id);
+                    }
                 }
             });
 
             $("#submitrowbutton").on('click', function() {
 
                 var data = {};
-                data.Group_Name = $("#groupnameinput").jqxInput('val');
+                data.Group_Name = $("#groupnameinput").val();
                 console.log(typeof data.Group_Name);
-                data.Project_Name = $("#projectnameinput").jqxInput('val');
-                data.Cost = $("#costinput").jqxDropDownList('getSelectedItem').label;
-                data.Date = $("#dateinput").jqxDateTimeInput('getDate').yyyymmdd();
+                data.Project_Name = $("#projectnameinput").val();
+                data.Cost = $("#costinput").val();
+                //data.Date = $("#dateinput").jqxDateTimeInput('getDate').yyyymmdd();
+                data.Date = $("#dateinput").val();
+                //console.log(typeof d);
+                //console.log(d);
                 //console.log(data.Date);
-                data.Mandate = $("#mandateinput").jqxDropDownList('getSelectedItem').label;
-                data.LOE = $("#loeinput").jqxDropDownList('getSelectedItem').label;
-                data.IOS = ($("#iosinput").jqxDropDownList('getSelectedItem').label == '√')? '1': '0';
+                //data.Mandate = $("#mandateinput").jqxDropDownList('getSelectedItem').label;
+                data.Mandate = $( "#mandateinput option:selected" ).text();
+                //data.LOE = $("#loeinput").jqxDropDownList('getSelectedItem').label;
+                data.LOE = $( "#loeinput option:selected" ).text();
+                //data.IOS = ($("#iosinput").jqxDropDownList('getSelectedItem').label == '√')? '1': '0';
                 //console.log($("#iosinput").jqxDropDownList('getSelectedItem').label);
-                data.Android = ($("#androidinput").jqxDropDownList('getSelectedItem').label == '√')? '1': '0';
-                data.Server = ($("#serverinput").jqxDropDownList('getSelectedItem') == '√').label? '1': '0';
-                data.Project_Info = $("#projectinfoinput").jqxInput('val');
+                //data.Android = ($("#androidinput").jqxDropDownList('getSelectedItem').label == '√')? '1': '0';
+                //data.Server = ($("#serverinput").jqxDropDownList('getSelectedItem') == '√').label? '1': '0';
+                data.IOS = $('input[name=iosradio]:checked').val();
+                data.Android = $('input[name=androidradio]:checked').val();
+                data.Server = $('input[name=serverradio]:checked').val();
+                data.Project_Info = $("#projectinfoinput").val();
 
                 console.log(data);
                 $.post("/update", { action: "create", data: data});
             });
 
             $("#createrowbutton").on('click', function() {
-                $("#createforms").show();
-                $("#comment").hide()
+                var disabled = $(this).attr('disabled');
+                if (!disabled) {
+                    $("#createforms").show();
+                    $("#comment").hide()
+                }
             });
 
 
@@ -347,7 +316,6 @@
                         $('#loeselect').val(weight.LOE);
                     });
                 });
-
             });
 
 
@@ -360,10 +328,11 @@
 
                 data.Project_Id = $(this).data('projid');
                 data.Commenter = $("#commenterinput").jqxInput('val');
-                data.Comment = $("#commentinput").jqxInput('val');
+                data.Comment = $("#commentinput").val();
                 $.post("/postcomment", data, function(data){
                     data = JSON.parse(data);
-                    $("#project_comment").append('<li>' + data.Commenter + ': ' + data.Comment + '</li>');
+                    //$("#project_comment").append('<li>' + data.Commenter + ': ' + data.Comment + '</li>');
+                    $("#post_head").before('<div class="panel">' + data.Commenter + ': ' + data.Comment + '</div>')
                 });
             });
 
@@ -373,90 +342,25 @@
                 var args = event.args;
                 $("#createforms").hide();
                 $("#comment").show();
-                $("#project_description").text('Project info:');
-                $("#project_description").append('<li>' + args.row.Project_Info + '</li>');
+                $("#project_description").text(args.row.Project_Info);
+                //$("#project_description").append('<li>' + args.row.Project_Info + '</li>');
                 var project_id = args.row.Id;
                 //--------set the custom attribute----------------
                 $("#submitcomment").attr("data-projid", project_id);
                 //------------------------------------------------
                 $.get("/comment", { project_id: project_id }).done(function( data ) {
-                    $("#project_comment").empty();
-                    $("#project_comment").text("Comment");
+                    //$("#project_comment").empty();
+                    //$("#project_comment").text("Comment");
+                    $("#comment_head").nextUntil("h4").remove();
                     for (var i = 0; i < data.length; ++i) {
-                        $("#project_comment").append('<li>' + data[i].Commenter + ': ' + data[i].Comment + '</li>');
+                        //$("#project_comment").append('<li>' + data[i].Commenter + ': ' + data[i].Comment + '</li>');
                         //comment += data[i].Commenter + ': ' + data[i].Comment + '\n';
+                        $("#comment_head").after('<div class="panel">' + data[i].Commenter + ': ' + data[i].Comment + '</div>');
                     }
                     //$("#project_comment").text(comment);
                 });
             });
 
-            //the form jquery things
-
-            $("#projectnameinput").jqxInput({
-                    placeHolder: "Enter a Project Name",
-                    height: 25,
-                    width: 200,
-                    minLength: 1,
-                    theme: 'energyblue'
-                }
-            );
-
-            var gradeSource = [1, 2, 3, 4, 5];
-            $("#costinput").jqxDropDownList({
-                source: gradeSource,
-                theme: 'energyblue',
-                width: '200px',
-                height: '25px'
-            });
-
-            $("#dateinput").jqxDateTimeInput({
-                width: '250px',
-                height: '25px',
-                theme: 'energyblue',
-                value: new Date()
-            });
-
-            $("#mandateinput").jqxDropDownList({
-                placeHolder: "Choose the Mandate",
-                source: gradeSource,
-                theme: 'energyblue',
-                width: '200px',
-                height: '25px'
-            });
-
-            $("#loeinput").jqxDropDownList({
-                placeHolder: "Choose the LOE",
-                source: gradeSource,
-                theme: 'energyblue',
-                width: '200px',
-                height: '25px'
-            });
-
-            var source = ['Yes', 'No'];
-
-            $("#iosinput").jqxDropDownList({
-                placeHolder: "Need IOS?",
-                source: source,
-                theme: 'energyblue',
-                width: '100px',
-                height: '25px'
-            });
-
-            $("#androidinput").jqxDropDownList({
-                placeHolder: "Need Android?",
-                source: source,
-                theme: 'energyblue',
-                width: '100px',
-                height: '25px'
-            });
-
-            $("#serverinput").jqxDropDownList({
-                placeHolder: "Need Server?",
-                source: source,
-                theme: 'energyblue',
-                width: '100px',
-                height: '25px'
-            });
 
             $("#projectinfoinput").jqxInput({
                         placeHolder: "Enter a Project Description",
@@ -476,16 +380,6 @@
                 minLength: 1,
                 theme: 'energyblue'
             });
-
-            $("#commentinput").jqxInput({
-                placeHolder: "Enter your comment",
-                height: 75,
-                width: 400,
-                minLength: 1,
-                theme: 'energyblue'
-            });
-
-
 
             // helper function
 
@@ -511,8 +405,6 @@
 </nav>
 <div class="row">
     <br>
-    <div class="large-10 columns">
-
         <!--
 
         <div style="margin-top: 10px;">
@@ -520,111 +412,179 @@
         </div> -->
 
 
-        <div class="row">
-            <div class="large-2 columns">
-                <label> Cost
-                    <select id="costselect">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                    </select>
-                </label>
-            </div>
-            <div class="large-2 columns">
-                <label> Date
-                    <select id="dateselect">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                    </select>
-                </label>
-            </div>
-            <div class="large-2 columns">
-                <label> Mandate
-                    <select id="mandateselect">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                    </select>
-                </label>
-            </div>
-            <div class="large-2 columns">
-                <label> LOE
-                    <select id="loeselect">
-                        <option value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                    </select>
-                </label>
-            </div>
-            <div class="large-2 columns">
-                <a class="button" id="weightbutton">Submit Weight</a>
-            </div>
-
+    <div class="row">
+        <div class="large-2 columns">
+            <label> Cost
+                <select id="costselect">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </label>
         </div>
-        <div class="row">
-            <div id="jqxgrid"></div>
+        <div class="large-2 columns">
+            <label> Date
+                <select id="dateselect">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </label>
         </div>
-
-        <div style="margin-top: 10px;">
-            <input id="updaterowbutton" type="button" value="Update Selected Row" />
+        <div class="large-2 columns">
+            <label> Mandate
+                <select id="mandateselect">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </label>
         </div>
-
-
-        <div style="margin-top: 10px;">
-            <input id="deleterowbutton" type="button" value="Delete Selected Row" />
+        <div class="large-2 columns">
+            <label> LOE
+                <select id="loeselect">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                </select>
+            </label>
         </div>
-
-        <div style="margin-top: 10px;">
-            <input id="createrowbutton" type="button" value="Create a Row" />
+        <div class="large-2 columns">
+            <a class="button" id="weightbutton">Submit Weight</a>
         </div>
-
-
-
-
-
 
     </div>
-    <div class="large-2 columns">
+    <div class="row">
+        <div id="jqxgrid"></div>
+    </div>
+
+    <br>
+
+    <div class="row">
+
+
+        <ul class="button-group">
+            <li><a class="button" disabled id="updaterowbutton">Update Selected Row</a></li>
+            <li><a class="button" disabled id="deleterowbutton">Delete Selected Row</a></li>
+            <li><a class="button" disabled id="createrowbutton">Create a Row</a></li>
+            <li><a class="button" disabled id="editrowbutton">Edit a Row</a></li>
+        </ul>
+    </div>
+
+
+
+
+
+
+
+    <div class="row">
 
         <div id="createforms" hidden>
             <br>
-            <input type="text" name="Group_Name" id="groupnameinput" />
-            <input type="text" name="Project_Name" id="projectnameinput"/>
-            <div id="costinput"></div>
-            <div id="dateinput"></div>
-            <div id="mandateinput"></div>
-            <div id="loeinput"></div>
-            <div id="iosinput"></div>
-            <div id="androidinput"></div>
-            <div id="serverinput"></div>
-            <input type="text" name="Project_Info" id="projectinfoinput">
-            <div style="margin-top: 10px;">
-                <input id="submitrowbutton" type="button" value="Submit the new Project" />
+            <div class="row">
+                <div class="large-6 columns">
+                    <label> Group Name
+                        <input type="text" name="Group_Name" id="groupnameinput" placeholder="Enter Group Name" />
+                    </label>
+                </div>
+                <div class="large-6 columns">
+                    <label> Project Name
+                        <input type="text" name="Project_Name" id="projectnameinput" placeholder="Enter Project Name"/>
+                    </label>
+                </div>
             </div>
+            <div class="row">
+                <div class="large-6 columns">
+                    <label> Cost
+                        <!--<div id="costinput"><span class="prefix">Label</span></div>-->
+                        <input type="number" name="Group_Name" id="costinput" placeholder="Enter Cost" min="0"/>
+                    </label>
+                </div>
+                <div class="large-6 columns">
+                    <label> Due Date
+                        <input type="date" name="Date" id="dateinput"/>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-6 columns">
+                    <label> Choose Mandate
+                        <select id="mandateinput">
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="large-6 columns">
+                    <label> Choose LOE
+                        <select id="loeinput">
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-4 columns">
+                    <label>Need IOS?</label>
+                    <input type="radio" name="iosradio" value="1" checked/> YES
+                    <input type="radio" name="iosradio" value="0" /> NO
+                </div>
+                <div class="large-4 columns">
+                    <label>Need Android?</label>
+                    <input type="radio" name="androidradio" value="1" checked/> YES
+                    <input type="radio" name="androidradio" value="0" /> NO
+                </div>
+                <div class="large-4 columns">
+                    <label>Need IOS?</label>
+                    <input type="radio" name="serverradio" value="1" checked/> YES
+                    <input type="radio" name="serverradio" value="0" /> NO
+                </div>
+            </div>
+            <div class="row">
+                <div class="large-12 columns">
+                    <label>Project Description
+                        <textarea id="projectinfoinput" placeholder="Project Description"></textarea>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <a class="button" id="submitrowbutton">Submit Project</a>
+            </div>
+
         </div>
 
-        <div id="comment" hidden>
-            <div class="row">
+        <div id="comment" class="row" hidden>
+            <h4>Project Description</h4>
+            <div class="panel">
                 <p id="project_description">
                 </p>
             </div>
+            <h4 id="comment_head">Project Comments</h4>
 
-            <div class="row">
-                <p id="project_comment">
-                </p>
+            <h4 id="post_head">Post comment</h4>
 
-            </div>
-
-            <input type="text" name="Group_Name" id="commenterinput" />
-            <input type="text" name="Project_Name" id="commentinput"/>
+            <br>
+            <input type="text" name="Group_Name" id="commenterinput" placeholder="Enter Your Name" />
+            <br>
+            <!--
+            <input type="text" max="150" name="Project_Name" id="commentinput" placeholder="Enter Your Comment"/>
+            -->
+            <textarea id="commentinput" placeholder="Enter Your Comment"></textarea>
             <div style="margin-top: 10px;">
                 <input id="submitcomment" type="button" value="Submit the Comment" />
             </div>
+
 
 
 
