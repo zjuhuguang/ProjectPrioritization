@@ -76,5 +76,6 @@ module.exports = function(app) {
     });
 
     app.get('/getweight', index.getWeight);
+    app.get('/getrow', index.getrow);
 
 };

@@ -212,12 +212,10 @@ var update = function(req, res) {
         var query = projectInfo.query('INSERT INTO project_info set ?', post, function (err, result) {
             if (err) throw err;
             data.Id = result.insertId;
-            data.Grade = 0;
-            var re = {row: data};
             //console.log(result);
             //console.log(JSON.stringify(result));
             res.setHeader('Content-Type', 'application/json');
-            res.send(JSON.stringify(re));
+            res.send(JSON.stringify(data));
 
             console.log(query.sql);
             return;
@@ -243,13 +241,12 @@ var update = function(req, res) {
         var delQuery = 'DELETE FROM PROJECT_INFO WHERE ID =' + Id;
         var query = projectInfo.query(delQuery, function (err, result) {
             if (err) throw err;
-            //res.redirect('/insert');
-
-
-            //insert(req, res);
+            re = {};
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(re));
         });
-        var re = {};
-        res.send(JSON.stringify(re));
+
+
     }
 
     else if (action == 'edit') {
@@ -263,7 +260,6 @@ var update = function(req, res) {
         var query = projectInfo.query(editQuery, [data.Cost, data.Date, data.Mandate, data.Project_Name, data.Android, data.IOS, data.Server, data.Group_Name, data.Color, Id], function(err, result) {
             if (err) throw err;
             console.log("sql is " + query.sql);
-            data.Grade = 0;
             /*
             if (data.Android == '1')
                 data.Android = "YES";
@@ -277,8 +273,10 @@ var update = function(req, res) {
                 data.Server = "YES";
             else data.Server = "NO";
             */
-            var re = {row: data};
-            res.send(JSON.stringify(re));
+            //console.log(result);
+            console.log('is editing');
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(data));
         });
     }
 };
@@ -513,6 +511,19 @@ var login = function(req, res) {
     res.render('login.html');
 };
 
+var getrow = function(req, res) {
+    var project_id = req.query.project_id;
+    console.log(project_id);
+    var queryRow = 'SELECT * FROM PROJECT_INFO WHERE ID=';
+    projectInfo.query(queryRow + project_id, function(err, rows) {
+        if (err) throw err;
+        res.setHeader('Content-Type', 'application/json');
+        res.header('Access-Control-Allow-Origin', "*");
+        console.log("reading row");
+        res.send(JSON.stringify(rows[0]));
+    })
+};
+
 
 var myHelper = function(req, res) {
     res.setHeader('Content-Type', 'application/json');
@@ -566,3 +577,4 @@ exports.comment = comment;
 exports.postcomment = postcomment;
 exports.login = login;
 exports.getWeight = getWeight;
+exports.getrow = getrow;

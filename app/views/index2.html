@@ -25,6 +25,15 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
+            Date.prototype.yyyymmdd = function() {
+                var yyyy = this.getFullYear().toString();
+                var mm = (this.getMonth()+1).toString(); // getMonth() is zero-based
+                var dd  = this.getDate().toString();
+                return yyyy + '-' + (mm[1]?mm:"0"+mm[0]) + '-' + (dd[1]?dd:"0"+dd[0]); // padding
+            };
+
+            var today = new Date();
+            $('#dateinput').val(today.yyyymmdd());
 
             $.get("/index?action=queryProjects", function(data) {
 
@@ -66,19 +75,6 @@
                     theme:'energyblue'
                 });
 */
-                var source =
-                {
-                    localdata: data,
-                    datatype: "array",
-                    datafield: [
-                        { name: 'Cost' },
-                        { name: 'Date_Val' },
-                        { name: 'Mandate' },
-                        { name: 'Project_Name' },
-                        { name: 'Group_Name' }
-
-                    ]
-                };
 
 
 
@@ -98,10 +94,10 @@
 
 
                     //console.log(dataAdapter);
-                $.get('/isAuthenticated', function(data) {
-                    console.log(data);
+                $.get('/isAuthenticated', function(data_i) {
+                    console.log(data_i);
                     var edited = false;
-                    if (data == 'authenticated') {
+                    if (data_i == 'authenticated') {
                         $("#deleterowbutton").attr('disabled', false);
                         $("#createrowbutton").attr('disabled', false);
                         $("#logoutbutton").text('logout');
@@ -112,9 +108,9 @@
                         $("#logoutbutton").text('login');
                     }
 
-                    $.get('/getweight', function(data) {
-                        console.log(data);
-                        var weight = JSON.parse(data);
+                    $.get('/getweight', function(data_i) {
+                        //console.log(data);
+                        var weight = JSON.parse(data_i);
 
                         $('#costselect').val(weight.Cost);
                         $('#dateselect').val(weight.Date);
@@ -124,59 +120,98 @@
 
 
 
+                    $("#deleterowbutton").on('click', function () {
+                        var disabled = $(this).attr('disabled');
+                        if (!disabled) {
+                            var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
+                            var rowscount = $("#jqxgrid").jqxGrid('getdatainformation').rowscount;
+                            if (selectedrowindex >= 0 && selectedrowindex < rowscount) {
+                                var id = $("#jqxgrid").jqxGrid('getrowid', selectedrowindex);
+                                var data = $('#jqxgrid').jqxGrid('getrowdata', id);
+                                console.log(data);
+                                $.post("http://localhost:8017/update", {id: data.Id, action: "remove"}).done(function(data) {
+                                    alert("project " + data.Project_Name + " deleted");
+                                    location.reload();
+
+                                });
+
+                            }
+                        }
+                    });
 
 
-                    $("#jqxgrid").jqxGrid(
-                            {
-                                width: "100%",
-                                source: source,
-                                columns: [
-                                    { text: 'Color', columntype: 'dropdownlist', datafield: 'Color_val', width: 80, cellsrenderer: cellsrenderermandatecolor,
-                                        initeditor: function (row, cellvalue, editor) {
-                                            var source = ["blue", "red", "green"];
-                                            editor.jqxDropDownList({
-                                                source: source,
-                                                theme: 'energyblue',
-                                                width: '200px',
-                                                height: '25px'
-                                            });
+                    //console.log(data);
+                    function refresh(data){
+                        var source =
+                        {
+                            localdata: data,
+                            datatype: "array",
+                            datafield: [
+                                { name: 'Cost' },
+                                { name: 'Date_Val' },
+                                { name: 'Mandate' },
+                                { name: 'Project_Name' },
+                                { name: 'Group_Name' }
+
+                            ]
+                        };
+
+
+
+                        $("#jqxgrid").jqxGrid(
+                                {
+                                    width: "100%",
+                                    source: source,
+                                    columns: [
+                                        { text: 'Color', columntype: 'dropdownlist', datafield: 'Color_val', cellsalign: "center", width: 80, cellsrenderer: cellsrenderermandatecolor,
+                                            initeditor: function (row, cellvalue, editor) {
+                                                var source = ["blue", "red", "green"];
+                                                editor.jqxDropDownList({
+                                                    source: source,
+                                                    theme: 'energyblue',
+                                                    width: '200px',
+                                                    height: '25px'
+                                                });
+                                            }},
+                                        { text: 'Group Name', datafield: 'Group_Name', width: 120, cellsalign: 'center' },
+                                        { text: 'Project Name', datafield: 'Project_Name', width: 120, cellsalign: 'center' },
+                                        { text: 'Cost', columntype: 'NumberInput', datafield: 'Cost', cellsalign: "center", width: 100 },
+                                        { text: 'Date', columntype: 'datetimeinput', cellsformat : 'yyyy-MM-dd', datafield: 'Date_Val', width: 100 },
+                                        //{ text: 'Date', datafield: 'Date', width: 100 },
+                                        { text: 'Mandate', columntype: 'dropdownlist', datafield: 'Mandate', width:80, cellsalign: "center",
+                                            initeditor: function (row, cellvalue, editor) {
+                                                var source = ['0', '1', '2', '3', '4'];
+                                                editor.jqxDropDownList({
+                                                    source: source,
+                                                    theme: 'energyblue',
+                                                    width: '200px',
+                                                    height: '25px'
+                                                });
                                         }},
-                                    { text: 'Group Name', datafield: 'Group_Name', width: 100, cellsalign: 'center' },
-                                    { text: 'Project Name', datafield: 'Project_Name', width: 90, cellsalign: 'center', cellsformat: 'c2' },
-                                    { text: 'Cost', columntype: 'NumberInput', datafield: 'Cost', width: 100 },
-                                    { text: 'Date', columntype: 'datetimeinput', cellsformat : 'yyyy-MM-dd', datafield: 'Date_Val', width: 100 },
-                                    //{ text: 'Date', datafield: 'Date', width: 100 },
-                                    { text: 'Mandate', columntype: 'dropdownlist', datafield: 'Mandate', width:60, cellsalign: "center",
-                                        initeditor: function (row, cellvalue, editor) {
-                                            var source = ['0', '1', '2', '3', '4'];
-                                            editor.jqxDropDownList({
-                                                source: source,
-                                                theme: 'energyblue',
-                                                width: '200px',
-                                                height: '25px'
-                                            });
-                                    }},
-                                    { text: 'LOE', columntype: 'dropdownlist', datafield: 'LOE', width:60, cellsalign: "center",
-                                        initeditor: function (row, cellvalue, editor) {
-                                            var source = ['0', '1', '2', '3', '4'];
-                                            editor.jqxDropDownList({
-                                                source: source,
-                                                theme: 'energyblue',
-                                                width: '200px',
-                                                height: '25px'
-                                            });
-                                        }},
-                                    { text: 'IOS', columntype: 'dropdownlist', datafield: 'IOS_val', width: 80, cellsalign: 'right' },
-                                    { text: 'Android', columntype: 'dropdownlist', datafield: 'Android_val', width: 80, cellsalign: 'right' },
-                                    { text: 'Server', columntype: 'dropdownlist', datafield: 'Server_val', width: 80, cellsalign: 'right' },
-                                    { text: 'Grade', datafield: 'Grade', width: 80, cellsalign: 'right', editable: false}
+                                        { text: 'LOE', columntype: 'dropdownlist', datafield: 'LOE', width:80, cellsalign: "center",
+                                            initeditor: function (row, cellvalue, editor) {
+                                                var source = ['0', '1', '2', '3', '4'];
+                                                editor.jqxDropDownList({
+                                                    source: source,
+                                                    theme: 'energyblue',
+                                                    width: '200px',
+                                                    height: '25px'
+                                                });
+                                            }},
+                                        { text: 'IOS', columntype: 'dropdownlist', datafield: 'IOS_val', width: 80, cellsalign: 'center' },
+                                        { text: 'Android', columntype: 'dropdownlist', datafield: 'Android_val', width: 80, cellsalign: 'center' },
+                                        { text: 'Server', columntype: 'dropdownlist', datafield: 'Server_val', width: 80, cellsalign: 'center' },
+                                        { text: 'Grade', datafield: 'Grade', width: 80, cellsalign: 'right', cellsalign: 'center', editable: false}
 
-                                ],
-                                sortable: true,
-                                editable: edited,
-                                editmode: 'dblclick'
+                                    ],
+                                    sortable: true,
+                                    editable: edited,
+                                    editmode: 'dblclick'
 
-                            });});
+                                });}
+                    refresh(data);
+
+                });
 
             });
 
@@ -191,13 +226,6 @@
                 theme: 'energyblue',
                 height: 30
             });
-/*
-            $("#logoutbutton").jqxButton({
-                theme: 'energyblue',
-                height: 30
-            });
-*/
-            //var isEdited = false;
 
             $("#logoutbutton").on('click', function() {
                 console.log($(this).text());
@@ -223,23 +251,11 @@
 
             });
 
-            $("#deleterowbutton").on('click', function () {
-                var disabled = $(this).attr('disabled');
-                if (!disabled) {
-                    var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
-                    var rowscount = $("#jqxgrid").jqxGrid('getdatainformation').rowscount;
-                    if (selectedrowindex >= 0 && selectedrowindex < rowscount) {
-                        var id = $("#jqxgrid").jqxGrid('getrowid', selectedrowindex);
-                        var data = $('#jqxgrid').jqxGrid('getrowdata', id);
-                        console.log(data);
-                        $.post("http://localhost:8017/update", {id: data.Id, action: "remove"});
-                        var commit = $("#jqxgrid").jqxGrid('deleterow', id);
-                    }
-                }
-            });
+
 
             $("#updaterowbutton").on('click', function() {
                 var disabled = $(this).attr('disabled');
+
                 if (!disabled) {
                     var selectedrowindex = $("#jqxgrid").jqxGrid('getselectedrowindex');
                     var rowscount = $("#jqxgrid").jqxGrid('getdatainformation').rowscount;
@@ -254,10 +270,51 @@
                         data.Server = (data.Server_val == '√') ? '1' : '0';
                         console.log(data);
 
-                        $.post("/update", {action: "edit", data: data, id: data.Id});
+                        $.post("/update", {action: "edit", data: data, id: data.Id}).done(function(data) {
+                            var projname = data.Project_Name;
+                            alert("Project " + projname + " updated");
+                        });
                         //var commit = $("#jqxgrid").jqxGrid('deleterow', id);
                     }
                 }
+            });
+
+            $("#editrowbutton").on('click', function() {
+                $('#createforms').attr('data-iscreate', 0);
+                $('#createforms').show();
+                $('#submitrowbutton').text('Complete Edit');
+                $('#comment').hide();
+                var id = $("#editrowbutton").attr('data-projid');
+                console.log(id);
+                $.get('/getrow', {project_id: id}).done(function(data) {
+                    //var dat = JSON.parse(data);
+                    console.log(data);
+                    $("#groupnameinput").val(data.Group_Name);
+                    $("#projectnameinput").val(data.Project_Name);
+                    $("#dateinput").val(data.Date.substring(0, 10));
+                    $("#costinput").val(data.Cost);
+                    $("#mandateinput").val(data.Mandate);
+                    $("#loeinput").val(data.LOE);
+                    $("#colorinput").val(data.Color);
+
+                    var $radioios = $('input:radio[name=iosradio]');
+                    if (data.IOS == '1') $radioios.filter('[value=1]').prop('checked', true);
+                    else $radioios.filter('[value=0]').prop('checked', true);
+
+                    var $radioandroid = $('input:radio[name=androidradio]');
+                    if (data.Android == '1') $radioandroid.filter('[value=1]').prop('checked', true);
+                    else $radioandroid.filter('[value=0]').prop('checked', true);
+
+                    var $radioserver = $('input:radio[name=serverradio]');
+                    if (data.Server == '1') $radioserver.filter('[value=1]').prop('checked', true);
+                    else $radioserver.filter('[value=0]').prop('checked', true);
+
+                    $("#projectinfoinput").text(data.Project_Info);
+                });
+
+
+
+
             });
 
             $("#submitrowbutton").on('click', function() {
@@ -266,34 +323,57 @@
                 data.Group_Name = $("#groupnameinput").val();
                 console.log(typeof data.Group_Name);
                 data.Project_Name = $("#projectnameinput").val();
-                data.Cost = $("#costinput").val();
-                //data.Date = $("#dateinput").jqxDateTimeInput('getDate').yyyymmdd();
+                var cost = parseInt($("#costinput").val());
+                data.Cost = parseInt(cost);
+                //alert("Hello! I am an alert box!");
+                if (isNaN(cost)) return;
                 data.Date = $("#dateinput").val();
-                //console.log(typeof d);
-                //console.log(d);
-                //console.log(data.Date);
-                //data.Mandate = $("#mandateinput").jqxDropDownList('getSelectedItem').label;
-                data.Mandate = $( "#mandateinput option:selected" ).text();
-                //data.LOE = $("#loeinput").jqxDropDownList('getSelectedItem').label;
-                data.LOE = $( "#loeinput option:selected" ).text();
-                //data.IOS = ($("#iosinput").jqxDropDownList('getSelectedItem').label == '√')? '1': '0';
-                //console.log($("#iosinput").jqxDropDownList('getSelectedItem').label);
-                //data.Android = ($("#androidinput").jqxDropDownList('getSelectedItem').label == '√')? '1': '0';
-                //data.Server = ($("#serverinput").jqxDropDownList('getSelectedItem') == '√').label? '1': '0';
+                data.Mandate = $( "#mandateinput option:selected" ).val();
+                data.LOE = $( "#loeinput option:selected" ).val();
                 data.IOS = $('input[name=iosradio]:checked').val();
                 data.Android = $('input[name=androidradio]:checked').val();
                 data.Server = $('input[name=serverradio]:checked').val();
                 data.Project_Info = $("#projectinfoinput").val();
+                data.Color = $( "#colorinput option:selected" ).val();
 
                 console.log(data);
-                $.post("/update", { action: "create", data: data});
+                var iscreate = $('#createforms').data('iscreate');
+                console.log(typeof iscreate);
+                console.log(iscreate);
+                if ($('#createforms').data('iscreate') == 1) {
+                    $.post("/update", {action: "create", data: data}).done(function(data) {
+                        alert('Project ' + data.Project_Name + ' has been created');
+                        location.reload();
+                    });
+                } else {
+                    console.log(data);
+                    var id = $('#editrowbutton').data('projid');
+                    $.post("/update", {action: "edit", data: data, id: id}).done(function (data) {
+                        alert('Project ' + data.Project_Name + ' has been edited');
+                        location.reload();
+                    });
+                }
             });
 
             $("#createrowbutton").on('click', function() {
                 var disabled = $(this).attr('disabled');
+                $('#submitrowbutton').text('Submit Project');
                 if (!disabled) {
                     $("#createforms").show();
-                    $("#comment").hide()
+                    $("#createforms").attr('data-iscreate', 1);
+                    $("#comment").hide();
+                    $("#groupnameinput").val("");
+                    $("#projectnameinput").val("");
+                    var today = new Date();
+                    $('#dateinput').val(today.yyyymmdd());
+                    $("#costinput").val('0');
+                    $("#mandateinput").val('0');
+                    $("#loeinput").val('0');
+                    $("#colorinput").val('1');
+                    $('input:radio[name=iosradio]').filter('[value=1]').prop('checked', true);
+                    $('input:radio[name=androidradio]').filter('[value=1]').prop('checked', true);
+                    $('input:radio[name=serverradio]').filter('[value=1]').prop('checked', true);
+                    $("#projectinfoinput").text('');
                 }
             });
 
@@ -314,6 +394,9 @@
                         $('#dateselect').val(weight.Date);
                         $('#mandateselect').val(weight.Mandate);
                         $('#loeselect').val(weight.LOE);
+
+
+
                     });
                 });
             });
@@ -323,10 +406,11 @@
                 var data = {};
                 //console.log($(this));
                 //-----------use the .data method to get the custom attribute---
-                console.log($(this).data('projid'));
+                //console.log($(this).data('projid'));
                 //--------------------------------------------------------------
 
-                data.Project_Id = $(this).data('projid');
+                data.Project_Id = $(this).attr('data-projid');
+                console.log(data.Project_Id);
                 data.Commenter = $("#commenterinput").jqxInput('val');
                 data.Comment = $("#commentinput").val();
                 $.post("/postcomment", data, function(data){
@@ -338,16 +422,24 @@
 
 
             $('#jqxgrid').on('rowselect', function (event) {
-                console.log(event);
+                //console.log(event);
                 var args = event.args;
                 $("#createforms").hide();
                 $("#comment").show();
                 $("#project_description").text(args.row.Project_Info);
+                //console.log($('#jqxgrid').jqxGrid('editable'));
+                if ($('#jqxgrid').jqxGrid('editable')) {
+                    $('#editrowbutton').attr('disabled', false);
+                }
                 //$("#project_description").append('<li>' + args.row.Project_Info + '</li>');
                 var project_id = args.row.Id;
+                console.log(typeof project_id);
                 //--------set the custom attribute----------------
                 $("#submitcomment").attr("data-projid", project_id);
+                $("#editrowbutton").attr("data-projid", project_id);
                 //------------------------------------------------
+
+
                 $.get("/comment", { project_id: project_id }).done(function( data ) {
                     //$("#project_comment").empty();
                     //$("#project_comment").text("Comment");
@@ -383,12 +475,7 @@
 
             // helper function
 
-            Date.prototype.yyyymmdd = function() {
-                var yyyy = this.getFullYear().toString();
-                var mm = (this.getMonth()+1).toString(); // getMonth() is zero-based
-                var dd  = this.getDate().toString();
-                return yyyy + '-' + (mm[1]?mm:"0"+mm[0]) + '-' + (dd[1]?dd:"0"+dd[0]); // padding
-            };
+
 
         });
     </script>
@@ -405,12 +492,6 @@
 </nav>
 <div class="row">
     <br>
-        <!--
-
-        <div style="margin-top: 10px;">
-            <input id="logoutbutton" type="button" value="Logout" />
-        </div> -->
-
 
     <div class="row">
         <div class="large-2 columns">
@@ -467,12 +548,18 @@
     <div class="row">
 
 
-        <ul class="button-group">
-            <li><a class="button" disabled id="updaterowbutton">Update Selected Row</a></li>
-            <li><a class="button" disabled id="deleterowbutton">Delete Selected Row</a></li>
-            <li><a class="button" disabled id="createrowbutton">Create a Row</a></li>
-            <li><a class="button" disabled id="editrowbutton">Edit a Row</a></li>
-        </ul>
+        <div class="large-3 columns">
+            <a class="button" disabled id="updaterowbutton">Update Selected Row</a>
+        </div>
+        <div class="large-3 columns">
+            <a class="button" disabled id="deleterowbutton">Delete Selected Row</a>
+        </div>
+        <div class="large-3 columns">
+            <a class="button" disabled id="createrowbutton">Create a Row</a>
+        </div>
+        <div class="large-3 columns">
+            <a class="button" disabled id="editrowbutton">Edit a Row</a>
+        </div>
     </div>
 
 
@@ -552,12 +639,24 @@
                 </div>
             </div>
             <div class="row">
+                <div class="large-6 columns">
+                    <label> Choose Color
+                        <select id="colorinput">
+                            <option value="1">Green</option>
+                            <option value="2">Blue</option>
+                            <option value="3">Red</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+            <div class="row">
                 <div class="large-12 columns">
                     <label>Project Description
                         <textarea id="projectinfoinput" placeholder="Project Description"></textarea>
                     </label>
                 </div>
             </div>
+
             <div class="row">
                 <a class="button" id="submitrowbutton">Submit Project</a>
             </div>
