@@ -129,10 +129,9 @@
                                 var id = $("#jqxgrid").jqxGrid('getrowid', selectedrowindex);
                                 var data = $('#jqxgrid').jqxGrid('getrowdata', id);
                                 console.log(data);
-                                $.post("http://localhost:8017/update", {id: data.Id, action: "remove"}).done(function(data) {
+                                $.post("http://localhost:8017/update", {id: data.Id, action: "remove"}).done(function(dat) {
                                     alert("project " + data.Project_Name + " deleted");
                                     location.reload();
-
                                 });
 
                             }
@@ -169,7 +168,7 @@
                                                 editor.jqxDropDownList({
                                                     source: source,
                                                     theme: 'energyblue',
-                                                    width: '200px',
+                                                    width: '80px',
                                                     height: '25px'
                                                 });
                                             }},
@@ -184,7 +183,7 @@
                                                 editor.jqxDropDownList({
                                                     source: source,
                                                     theme: 'energyblue',
-                                                    width: '200px',
+                                                    width: '80px',
                                                     height: '25px'
                                                 });
                                         }},
@@ -194,13 +193,40 @@
                                                 editor.jqxDropDownList({
                                                     source: source,
                                                     theme: 'energyblue',
-                                                    width: '200px',
+                                                    width: '80px',
                                                     height: '25px'
                                                 });
                                             }},
-                                        { text: 'IOS', columntype: 'dropdownlist', datafield: 'IOS_val', width: 80, cellsalign: 'center' },
-                                        { text: 'Android', columntype: 'dropdownlist', datafield: 'Android_val', width: 80, cellsalign: 'center' },
-                                        { text: 'Server', columntype: 'dropdownlist', datafield: 'Server_val', width: 80, cellsalign: 'center' },
+                                        { text: 'IOS', columntype: 'dropdownlist', datafield: 'IOS_val', width: 80, cellsalign: 'center',
+                                            initeditor: function (row, cellvalue, editor) {
+                                                var source = ['√', '×'];
+                                                editor.jqxDropDownList({
+                                                    source: source,
+                                                    theme: 'energyblue',
+                                                    width: '80px',
+                                                    height: '25px'
+                                                });
+                                            }},
+                                        { text: 'Android', columntype: 'dropdownlist', datafield: 'Android_val', width: 80, cellsalign: 'center',
+                                            initeditor: function (row, cellvalue, editor) {
+                                                var source = ['√', '×'];
+                                                editor.jqxDropDownList({
+                                                    source: source,
+                                                    theme: 'energyblue',
+                                                    width: '80px',
+                                                    height: '25px'
+                                                });
+                                            }},
+                                        { text: 'Server', columntype: 'dropdownlist', datafield: 'Server_val', width: 80, cellsalign: 'center',
+                                            initeditor: function (row, cellvalue, editor) {
+                                                var source = ['√', '×'];
+                                                editor.jqxDropDownList({
+                                                    source: source,
+                                                    theme: 'energyblue',
+                                                    width: '80px',
+                                                    height: '25px'
+                                                });
+                                            }},
                                         { text: 'Grade', datafield: 'Grade', width: 80, cellsalign: 'right', cellsalign: 'center', editable: false}
 
                                     ],
@@ -268,13 +294,16 @@
                         data.IOS = (data.IOS_val == '√') ? '1' : '0';
                         data.Android = (data.Android_val == '√') ? '1' : '0';
                         data.Server = (data.Server_val == '√') ? '1' : '0';
+                        //console.log(typeof data.Date_Val);
+                        //console.log(data.Date_Val.yyyymmdd());
+                        data.Date = data.Date_Val.yyyymmdd();
                         console.log(data);
 
                         $.post("/update", {action: "edit", data: data, id: data.Id}).done(function(data) {
                             var projname = data.Project_Name;
                             alert("Project " + projname + " updated");
+                            location.reload();
                         });
-                        //var commit = $("#jqxgrid").jqxGrid('deleterow', id);
                     }
                 }
             });
@@ -389,14 +418,12 @@
                     $.get('/getweight', function(data) {
                         console.log(data);
                         var weight = JSON.parse(data);
-
                         $('#costselect').val(weight.Cost);
                         $('#dateselect').val(weight.Date);
                         $('#mandateselect').val(weight.Mandate);
                         $('#loeselect').val(weight.LOE);
-
-
-
+                        alert("Weight has been updated");
+                        location.reload();
                     });
                 });
             });
@@ -416,7 +443,8 @@
                 $.post("/postcomment", data, function(data){
                     data = JSON.parse(data);
                     //$("#project_comment").append('<li>' + data.Commenter + ': ' + data.Comment + '</li>');
-                    $("#post_head").before('<div class="panel">' + data.Commenter + ': ' + data.Comment + '</div>')
+                    //$("#post_head").before('<div class="panel">' + data.Commenter + ': ' + data.Comment + '</div>')
+                    $('#project_comments').append('<b>' + data.Commenter + '</b>' + ':  ' + data.Comment + '<br><br>' )
                 });
             });
 
@@ -441,13 +469,15 @@
 
 
                 $.get("/comment", { project_id: project_id }).done(function( data ) {
-                    //$("#project_comment").empty();
+                    $("#project_comments").empty();
                     //$("#project_comment").text("Comment");
-                    $("#comment_head").nextUntil("h4").remove();
+                    //$("#comment_head").nextUntil("h4").remove();
                     for (var i = 0; i < data.length; ++i) {
                         //$("#project_comment").append('<li>' + data[i].Commenter + ': ' + data[i].Comment + '</li>');
                         //comment += data[i].Commenter + ': ' + data[i].Comment + '\n';
-                        $("#comment_head").after('<div class="panel">' + data[i].Commenter + ': ' + data[i].Comment + '</div>');
+                        //$("#comment_head").after('<div class="panel">' + data[i].Commenter + ': ' + data[i].Comment + '</div>');
+                        $('#project_comments').append('<b>' + data[i].Commenter + '</b>' + ':  ' + data[i].Comment + '<br><br>' );
+
                     }
                     //$("#project_comment").text(comment);
                 });
@@ -492,8 +522,13 @@
 </nav>
 <div class="row">
     <br>
+    <div class="row">
+        Weight value indicate the significance value of different factors
+    </div>
 
     <div class="row">
+
+
         <div class="large-2 columns">
             <label> Cost
                 <select id="costselect">
@@ -669,7 +704,12 @@
                 <p id="project_description">
                 </p>
             </div>
+
             <h4 id="comment_head">Project Comments</h4>
+            <div class="panel">
+                <p id="project_comments">
+                </p>
+            </div>
 
             <h4 id="post_head">Post comment</h4>
 
@@ -683,16 +723,8 @@
             <div style="margin-top: 10px;">
                 <input id="submitcomment" type="button" value="Submit the Comment" />
             </div>
-
-
-
-
         </div>
     </div>
 </div>
-
-
-
-
 </body>
 </html>
