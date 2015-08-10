@@ -52,7 +52,6 @@ module.exports = function(app) {
     //app.get('/sort', index.sort);
     app.get('/index', index.index);
     app.post('/update', index.update);
-    app.get('/helper', index.myHelper);
     app.get('/comment', index.comment);
     app.post('/postcomment', index.postcomment);
     app.get('/login', index.login);
